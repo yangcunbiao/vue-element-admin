@@ -54,14 +54,7 @@
 
       <div style="position:relative">
         <div class="tips">
-          <span>{{ $t('login.username') }} : admin</span>
-          <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
-        </div>
-        <div class="tips">
-          <span style="margin-right:18px;">
-            {{ $t('login.username') }} : editor
-          </span>
-          <span>{{ $t('login.password') }} : {{ $t('login.any') }}</span>
+          <img v-if="requestCodeSuccess" style="margin-top: 2px;" src="randCodeImage">
         </div>
 
         <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
@@ -84,6 +77,7 @@
 import { validUsername } from '@/utils/validate'
 import LangSelect from '@/components/LangSelect'
 import SocialSign from './components/SocialSignin'
+import { getCheckCodePicture } from '@/api/user'
 
 export default {
   name: 'Login',
@@ -117,7 +111,10 @@ export default {
       loading: false,
       showDialog: false,
       redirect: undefined,
-      otherQuery: {}
+      otherQuery: {},
+      currDatetime: '',
+      randCodeImage: '',
+      requestCodeSuccess: false
     }
   },
   watch: {
@@ -134,6 +131,7 @@ export default {
   },
   created() {
     // window.addEventListener('storage', this.afterQRScan)
+    this.handleChangeCheckCode()
   },
   mounted() {
     if (this.loginForm.username === '') {
@@ -176,6 +174,20 @@ export default {
           console.log('error submit!!')
           return false
         }
+      })
+    },
+    handleChangeCheckCode() {
+      this.currDatetime = new Date().getTime()
+      getCheckCodePicture(this.currDatetime).then(res => {
+        if (res.success) {
+          this.randCodeImage = res.data
+          this.requestCodeSuccess = true
+        } else {
+          this.$message.error(res.message)
+          this.requestCodeSuccess = false
+        }
+      }).catch(() => {
+        this.requestCodeSuccess = false
       })
     },
     getOtherQuery(query) {
