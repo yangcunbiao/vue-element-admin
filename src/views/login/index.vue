@@ -54,7 +54,8 @@
 
       <div style="position:relative">
         <div class="tips">
-          <img v-if="requestCodeSuccess" style="margin-top: 2px;" src="randCodeImage">
+          <img v-if="requestCodeSuccess" style="margin-top: 2px;" src="randCodeImage" @click="handleChangeCheckCode">
+          <img v-else style="margin-top: 2px;" src="../../assets/checkcode.png" @click="handleChangeCheckCode">
         </div>
 
         <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
@@ -179,6 +180,7 @@ export default {
     handleChangeCheckCode() {
       this.currDatetime = new Date().getTime()
       getCheckCodePicture(this.currDatetime).then(res => {
+        console.log('111')
         if (res.success) {
           this.randCodeImage = res.data
           this.requestCodeSuccess = true
@@ -188,6 +190,7 @@ export default {
         }
       }).catch(() => {
         this.requestCodeSuccess = false
+        console.log(1234)
       })
     },
     getOtherQuery(query) {
