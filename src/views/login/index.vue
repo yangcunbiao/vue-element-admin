@@ -64,7 +64,7 @@
         </el-col>
         <el-col>
           <img v-if="requestCodeSuccess" style="margin-bottom: 28px;" :src="randCodeImage" class="vertify_img" @click="handleChangeCheckCode">
-          <img v-else src="../../assets/checkcode.png" class="vertify_img" @click="handleChangeCheckCode">
+          <img v-else style="margin-bottom: 28px;" src="../../assets/checkcode.png" class="vertify_img" @click="handleChangeCheckCode">
         </el-col>
       </el-row>
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">
@@ -116,7 +116,7 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111',
+        password: '123456',
         captcha: '',
         checkKey: ''
       },
@@ -180,6 +180,7 @@ export default {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
           console.log(1)
+          debugger
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
@@ -189,6 +190,7 @@ export default {
             })
             .catch(() => {
               console.log(3)
+              this.handleChangeCheckCode()
               this.loading = false
             })
         } else {
