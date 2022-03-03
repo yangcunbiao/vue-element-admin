@@ -47,35 +47,36 @@
           </span>
         </el-form-item>
       </el-tooltip>
-
-      <el-form-item prop="checkCode">
-        <span class="svg-container">
-          <svg-icon icon-class="smail" />
-        </span>
-        <el-input
-          ref="checkCode"
-          v-model="loginForm.checkCode"
-          style="width: 180px;"
-          :placeholder="请输入验证码"
-          name="checkCode"
-          class="vertify_code"
-          auto-complete="false"
-          width="80%"
-        />
-        <img v-if="requestCodeSuccess" style="margin-top: 1px" :src="randCodeImage" class="vertify_img" @click="handleChangeCheckCode">
-        <img v-else style="margin-top: 1px;" src="../../assets/checkcode.png" class="vertify_img" @click="handleChangeCheckCode">
-      </el-form-item>
-
+      <el-row>
+        <el-col :span="17">
+          <el-form-item prop="checkCode">
+            <span class="svg-container">
+              <svg-icon icon-class="smail" />
+            </span>
+            <el-input
+              ref="checkCode"
+              v-model="loginForm.captcha"
+              :placeholder="$t('login.checkCode')"
+              name="checkCode"
+              auto-complete="false"
+            />
+          </el-form-item>
+        </el-col>
+        <el-col>
+          <img v-if="requestCodeSuccess" style="margin-bottom: 28px;" :src="randCodeImage" class="vertify_img" @click="handleChangeCheckCode">
+          <img v-else src="../../assets/checkcode.png" class="vertify_img" @click="handleChangeCheckCode">
+        </el-col>
+      </el-row>
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">
         {{ $t('login.logIn') }}
       </el-button>
 
-      <div style="position:relative">
+      <!-- <div style="position:relative">
 
         <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           {{ $t('login.thirdparty') }}
         </el-button>
-      </div>
+      </div> -->
     </el-form>
 
     <el-dialog :title="$t('login.thirdparty')" :visible.sync="showDialog">
@@ -116,7 +117,8 @@ export default {
       loginForm: {
         username: 'admin',
         password: '111111',
-        checkCode: ''
+        captcha: '',
+        checkKey: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -177,13 +179,16 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
+          console.log(1)
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
+              console.log(2)
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
             })
             .catch(() => {
+              console.log(3)
               this.loading = false
             })
         } else {
@@ -194,8 +199,8 @@ export default {
     },
     handleChangeCheckCode() {
       this.currDatetime = new Date().getTime()
+      this.loginForm.checkKey = this.currDatetime
       getCheckCodePicture(this.currDatetime).then(res => {
-        console.log('111')
         if (res.success) {
           this.randCodeImage = res.data
           this.requestCodeSuccess = true
@@ -205,7 +210,6 @@ export default {
         }
       }).catch(() => {
         this.requestCodeSuccess = false
-        console.log(1234)
       })
     },
     getOtherQuery(query) {
