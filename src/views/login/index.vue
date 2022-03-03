@@ -48,15 +48,29 @@
         </el-form-item>
       </el-tooltip>
 
+      <el-form-item prop="checkCode">
+        <span class="svg-container">
+          <svg-icon icon-class="smail" />
+        </span>
+        <el-input
+          ref="checkCode"
+          v-model="loginForm.checkCode"
+          style="width: 180px;"
+          :placeholder="请输入验证码"
+          name="checkCode"
+          class="vertify_code"
+          auto-complete="false"
+          width="80%"
+        />
+        <img v-if="requestCodeSuccess" style="margin-top: 1px" :src="randCodeImage" class="vertify_img" @click="handleChangeCheckCode">
+        <img v-else style="margin-top: 1px;" src="../../assets/checkcode.png" class="vertify_img" @click="handleChangeCheckCode">
+      </el-form-item>
+
       <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">
         {{ $t('login.logIn') }}
       </el-button>
 
       <div style="position:relative">
-        <div class="tips">
-          <img v-if="requestCodeSuccess" style="margin-top: 2px;" src="randCodeImage" @click="handleChangeCheckCode">
-          <img v-else style="margin-top: 2px;" src="../../assets/checkcode.png" @click="handleChangeCheckCode">
-        </div>
 
         <el-button class="thirdparty-button" type="primary" @click="showDialog=true">
           {{ $t('login.thirdparty') }}
@@ -101,7 +115,8 @@ export default {
     return {
       loginForm: {
         username: 'admin',
-        password: '111111'
+        password: '111111',
+        checkCode: ''
       },
       loginRules: {
         username: [{ required: true, trigger: 'blur', validator: validateUsername }],
@@ -346,6 +361,15 @@ $light_gray:#eee;
     right: 0;
     bottom: 6px;
   }
+  .vertify_code {
+  width: 180px;
+}
+.vertify_img {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 110px;
+}
 
   @media only screen and (max-width: 470px) {
     .thirdparty-button {
