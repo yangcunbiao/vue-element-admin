@@ -80,7 +80,7 @@ export default {
     any: '随便填',
     thirdparty: '第三方登录',
     thirdpartyTips: '本地不能模拟，请结合自己业务进行模拟！！！',
-    checkCode: '请输入验证'
+    checkCode: '请输入验证码'
   },
   documentation: {
     documentation: '文档',
