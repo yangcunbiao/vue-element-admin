@@ -179,17 +179,13 @@ export default {
     handleLogin() {
       this.$refs.loginForm.validate(valid => {
         if (valid) {
-          console.log(1)
-          debugger
           this.loading = true
           this.$store.dispatch('user/login', this.loginForm)
             .then(() => {
-              console.log(2)
               this.$router.push({ path: this.redirect || '/', query: this.otherQuery })
               this.loading = false
             })
             .catch(() => {
-              console.log(3)
               this.handleChangeCheckCode()
               this.loading = false
             })

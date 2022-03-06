@@ -17,7 +17,7 @@ export function getCheckCodePicture(key) {
 
 export function getInfo(token) {
   return request({
-    url: '/vue-element-admin/user/info',
+    url: '/sys/info',
     method: 'get',
     params: { token }
   })
@@ -25,7 +25,7 @@ export function getInfo(token) {
 
 export function logout() {
   return request({
-    url: '/vue-element-admin/user/logout',
+    url: '/sys/logout',
     method: 'post'
   })
 }
