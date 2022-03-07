@@ -7,3 +7,19 @@ export function getList(data) {
     data
   })
 }
+
+export function updateModel(data) {
+  return request({
+    url: '/model/update',
+    method: 'post',
+    data
+  })
+}
+
+export function addModel(data) {
+  return request({
+    url: '/model/add',
+    method: 'post',
+    data
+  })
+}
