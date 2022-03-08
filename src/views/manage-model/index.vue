@@ -83,6 +83,9 @@
         <el-form-item label="高度" prop="high">
           <el-input v-model="temp.high" type="number" />
         </el-form-item>
+        <el-form-item label="图片" prop="picture">
+          <upload :list="temp.pictureList" :limit="1" type="image" @change="handleUpload" />
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button @click="dialogFormVisible = false">
@@ -111,10 +114,11 @@ import { getList, addModel, updateModel, deleteModel } from '@/api/model.js'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import Upload from '@/views/qiniu/upload.vue'
 
 export default {
   name: 'ComplexTable',
-  components: { Pagination },
+  components: { Pagination, Upload },
   directives: { waves },
   filters: {
     statusFilter(status) {
@@ -147,7 +151,9 @@ export default {
         name: undefined,
         length: undefined,
         wide: undefined,
-        high: undefined
+        high: undefined,
+        pictureList: [],
+        picture: undefined
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -208,7 +214,9 @@ export default {
         timestamp: new Date(),
         title: '',
         status: 'published',
-        type: ''
+        type: '',
+        pictureList: [],
+        picture: undefined
       }
     },
     handleCreate() {
@@ -220,6 +228,7 @@ export default {
       })
     },
     createData() {
+      this.temp.picture = this.temp.pictureList[0].response.data
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           addModel(this.temp).then(() => {
@@ -238,6 +247,9 @@ export default {
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.timestamp = new Date(this.temp.timestamp)
+      if (this.temp.picture != null) {
+        this.temp.pictureList = [{ url: this.temp.picture, response: { data: this.temp.picture }}]
+      }
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -245,6 +257,7 @@ export default {
       })
     },
     updateData() {
+      this.temp.picture = this.temp.pictureList[0].response.data
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)
@@ -273,6 +286,10 @@ export default {
         })
       })
       this.list.splice(index, 1)
+    },
+    handleUpload(data) {
+      this.temp.pictureList = data
+      console.log(data)
     },
     handleDownload() {
       this.downloadLoading = true
