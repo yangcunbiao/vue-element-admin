@@ -40,7 +40,7 @@ const tableRouter = {
       path: 'model-table',
       component: () => import('@/views/manage-model/index'),
       name: 'manage-model-table',
-      meta: { title: 'manage-model' }
+      meta: { title: '型号管理' }
     }
   ]
 }

@@ -10,9 +10,9 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
+      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
         {{ $t('table.export') }}
-      </el-button>
+      </el-button> -->
     </div>
 
     <el-table
@@ -23,6 +23,7 @@
       fit
       highlight-current-row
       style="width: 100%;"
+      min-size="1000px"
       @sort-change="sortChange"
     >
       <el-table-column :label="$t('table.id')" type="index" align="center" width="50" />
@@ -106,7 +107,7 @@
 </template>
 
 <script>
-import { getList, addModel, updateModel } from '@/api/model.js'
+import { getList, addModel, updateModel, deleteModel } from '@/api/model.js'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -263,19 +264,15 @@ export default {
       })
     },
     handleDelete(row, index) {
-      this.$notify({
-        title: '成功',
-        message: '删除成功',
-        type: 'success',
-        duration: 2000
+      deleteModel(row.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
       })
       this.list.splice(index, 1)
-    },
-    handleFetchPv(pv) {
-    //   fetchPv(pv).then(response => {
-    //     this.pvData = response.data.pvData
-    //     this.dialogPvVisible = true
-    //   })
     },
     handleDownload() {
       this.downloadLoading = true

@@ -23,3 +23,10 @@ export function addModel(data) {
     data
   })
 }
+
+export function deleteModel(data) {
+  return request({
+    url: '/model/delete/' + data,
+    method: 'get'
+  })
+}
