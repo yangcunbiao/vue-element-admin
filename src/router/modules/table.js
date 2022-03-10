@@ -41,6 +41,18 @@ const tableRouter = {
       component: () => import('@/views/manage-model/index'),
       name: 'manage-model-table',
       meta: { title: '型号管理' }
+    },
+    {
+      path: 'community-table',
+      component: () => import('@/views/manage-community/index'),
+      name: 'manage-community-table',
+      meta: { title: '社区管理' }
+    },
+    {
+      path: 'fitnessEquipment-table',
+      component: () => import('@/views/manage-fitness-equipment/index'),
+      name: 'manage-fitnessEquipment-table',
+      meta: { title: '器材管理' }
     }
   ]
 }
