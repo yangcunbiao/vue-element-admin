@@ -2,17 +2,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="器材名称" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-input v-model="listQuery.modelNumber" placeholder="器材型号" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.name" placeholder="社区名字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <!-- <el-input v-model="listQuery.modelNumber" placeholder="器材型号" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" /> -->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        {{ $t('table.export') }}
-      </el-button> -->
     </div>
 
     <el-table
@@ -26,30 +23,30 @@
       min-size="1000px"
       @sort-change="sortChange"
     >
-      <el-table-column :label="$t('table.id')" type="index" align="center" width="50" />
-      <el-table-column label="器材名称" width="120px">
+      <el-table-column :label="$t('table.id')" type="index" align="center" width="100" />
+      <el-table-column label="社区名字" width="120px">
         <template slot-scope="{row}">
           <span>{{ row.name }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="器材型号" min-width="120px" align="center">
+      <el-table-column label="省" width="120px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.modelNumber }}</span>
+          <span>{{ row.province }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="长度" width="70px" align="center">
+      <el-table-column label="市" width="120px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.length }}cm</span>
+          <span>{{ row.city }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="宽度" width="70px" align="center">
+      <el-table-column label="区" width="120px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.wide }}cm</span>
+          <span>{{ row.district }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="高度" align="center" width="70px">
+      <el-table-column label="详细地址" align="center" min-width="120px">
         <template slot-scope="{row}">
-          <span>{{ row.high }}cm</span>
+          <span>{{ row.detailedAddress }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
@@ -68,20 +65,14 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="器材名称" prop="name">
+        <el-form-item label="社区名字" prop="name">
           <el-input v-model="temp.name" />
         </el-form-item>
-        <el-form-item label="器材型号" prop="modelNumber">
-          <el-input v-model="temp.modelNumber" />
+        <el-form-item label="地址" prop="address">
+          <el-cascader v-model="temp.address" :options="options" :props="{ expandTrigger: 'hover' }" size="medium" placeholder="请选择地址" style="width: 320px" />
         </el-form-item>
-        <el-form-item label="长度" prop="length">
-          <el-input v-model="temp.length" type="number" />
-        </el-form-item>
-        <el-form-item label="宽度" prop="wide">
-          <el-input v-model="temp.wide" type="number" />
-        </el-form-item>
-        <el-form-item label="高度" prop="high">
-          <el-input v-model="temp.high" type="number" />
+        <el-form-item label="详细地址" prop="detailedAddress">
+          <el-input v-model="temp.detailedAddress" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -107,10 +98,11 @@
 </template>
 
 <script>
-import { getList, addModel, updateModel, deleteModel } from '@/api/model.js'
+import { getList, addCommunity, updateCommunity, deleteCommunity } from '@/api/community'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import option from '@/utils/options'
 
 export default {
   name: 'ComplexTable',
@@ -136,18 +128,21 @@ export default {
       listQuery: {
         pageNum: 1,
         pageSize: 20,
-        modelNumber: undefined,
-        name: undefined
+        name: undefined,
+        province: undefined,
+        city: undefined,
+        district: undefined
       },
       importanceOptions: [1, 2, 3],
       showReviewer: false,
       temp: {
         id: undefined,
-        modelNumber: undefined,
         name: undefined,
-        length: undefined,
-        wide: undefined,
-        high: undefined
+        province: undefined,
+        city: undefined,
+        district: undefined,
+        detailedAddress: undefined,
+        address: []
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -159,12 +154,11 @@ export default {
       pvData: [],
       rules: {
         name: [{ required: true, message: '请填写名字', trigger: 'change' }],
-        modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }],
-        length: [{ required: true, message: '请填写长度', trigger: 'change' }],
-        wide: [{ required: true, message: '请填写宽度', trigger: 'change' }],
-        high: [{ required: true, message: '请填写高度', trigger: 'change' }]
+        address: [{ required: true, message: '请选择地址', trigger: 'change' }],
+        detailedAddress: [{ required: true, message: '请填写详细地址', trigger: 'change' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      options: option.option
     }
   },
   created() {
@@ -208,10 +202,17 @@ export default {
         timestamp: new Date(),
         title: '',
         status: 'published',
-        type: ''
+        type: '',
+        name: undefined,
+        province: undefined,
+        city: undefined,
+        district: undefined,
+        detailedAddress: undefined,
+        address: []
       }
     },
     handleCreate() {
+      console.log(this.options)
       this.resetTemp()
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
@@ -222,7 +223,10 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          addModel(this.temp).then(() => {
+          this.temp.province = this.temp.address[0]
+          this.temp.city = this.temp.address[1]
+          this.temp.district = this.temp.address[2]
+          addCommunity(this.temp).then(() => {
             this.list.unshift(this.temp)
             this.dialogFormVisible = false
             this.$notify({
@@ -237,6 +241,8 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
+      this.temp.address = [this.temp.province, this.temp.city, this.temp.district]
+      console.log(this.temp.address)
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
@@ -247,9 +253,12 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
+          this.temp.province = this.temp.address[0]
+          this.temp.city = this.temp.address[1]
+          this.temp.district = this.temp.address[2]
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          updateModel(tempData).then(() => {
+          updateCommunity(tempData).then(() => {
             const index = this.list.findIndex(v => v.id === this.temp.id)
             this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
@@ -264,7 +273,7 @@ export default {
       })
     },
     handleDelete(row, index) {
-      deleteModel(row.id).then(() => {
+      deleteCommunity(row.id).then(() => {
         this.$notify({
           title: '成功',
           message: '删除成功',

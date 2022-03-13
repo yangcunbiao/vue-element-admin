@@ -110,7 +110,7 @@
 </template>
 
 <script>
-import { getList, addModel, updateModel, deleteModel } from '@/api/model.js'
+import { getModelList, addModel, updateModel, deleteModel } from '@/api/model.js'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -179,7 +179,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      getList(this.listQuery).then(response => {
+      getModelList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
 

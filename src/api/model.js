@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-export function getList(data) {
+export function getModelList(data) {
   return request({
     url: '/model/list',
     method: 'post',

@@ -66,11 +66,11 @@
 
     <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
 
-    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
+    <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
-        <el-form-item label="器材编号" prop="serialNumber">
+        <!-- <el-form-item label="器材编号" prop="serialNumber">
           <el-input v-model="temp.serialNumber" />
-        </el-form-item>
+        </el-form-item> -->
         <el-form-item label="器材名称" prop="modelNumber">
           <el-input v-model="temp.modelName" />
         </el-form-item>
@@ -114,6 +114,7 @@
 
 <script>
 import { getList } from '@/api/fitness-equipment'
+// import { getModelList } from '@/api/model'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
