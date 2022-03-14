@@ -27,7 +27,7 @@
       @sort-change="sortChange"
     >
       <el-table-column :label="$t('table.id')" type="index" align="center" width="50" />
-      <el-table-column label="器材编号" width="120px">
+      <el-table-column label="器材编号" width="150px">
         <template slot-scope="{row}">
           <span>{{ row.serialNumber }}</span>
         </template>
@@ -39,17 +39,17 @@
       </el-table-column>
       <el-table-column label="社区" width="70px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.communityName }}cm</span>
+          <span>{{ row.communityName }}</span>
         </template>
       </el-table-column>
       <el-table-column label="状态" width="70px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.status }}cm</span>
+          <span>{{ row.status }}</span>
         </template>
       </el-table-column>
       <el-table-column label="安装时间" align="center" width="120px">
         <template slot-scope="{row}">
-          <span>{{ row.gmtCreate }}cm</span>
+          <span>{{ row.gmtCreate|formatTimer }}</span>
         </template>
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
@@ -80,15 +80,22 @@
           </el-select>
         </el-form-item>
         <el-form-item label="社区" prop="communityName">
-          <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
-            <el-option v-for="item in modelOptions" :key="item.modelNumber" :label="item.modelNumber" :value="item" />
+          <el-select v-model="temp.community" :filterable="true" :remote="true" placeholder="请输入小区名" :remote-method="getCommunityOptions" :loading="loadingCommunity" value-key="name" @change="handleChangeCommunity">
+            <el-option v-for="item in communityOptions" :key="item.id" :label="item.name" :value="item" style="width: 400px">
+              <span style="float: left;">{{ item.name }}</span>
+              <span style="float: right;color:#ccc;">{{ item.province }}/{{ item.city }}/{{ item.district }}</span>
+            </el-option>
           </el-select>
         </el-form-item>
-        <el-form-item label="状态" prop="status">
-          <el-input v-model="temp.status" />
-        </el-form-item>
-        <el-form-item label="区" prop="district">
-          <el-input v-model="temp.district" />
+        <el-form-item v-if="dialogStatus === 'update'" label="状态" prop="status">
+          <el-select v-model="temp.status">
+            <el-option
+              v-for="item in statusOptions"
+              :key="item.value"
+              :label="item.label"
+              :value="item.value"
+            />
+          </el-select>
         </el-form-item>
         <el-form-item label="图片" prop="picture">
           <upload :list="temp.pictureList" :limit="3" type="image" @change="handleUpload" />
@@ -117,8 +124,9 @@
 </template>
 
 <script>
-import { getFitnessEquipmentList } from '@/api/fitness-equipment'
+import { getFitnessEquipmentList, addFitnessEquipment } from '@/api/fitness-equipment'
 import { getModelList } from '@/api/model'
+import { getCommunityList } from '@/api/community'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -136,6 +144,15 @@ export default {
         deleted: 'danger'
       }
       return statusMap[status]
+    },
+    formatTimer: function(value) {
+      const date = new Date(value)
+      const y = date.getFullYear()
+      let MM = date.getMonth() + 1
+      MM = MM < 10 ? '0' + MM : MM
+      let d = date.getDate()
+      d = d < 10 ? '0' + d : d
+      return y + '-' + MM + '-' + d
     }
 
   },
@@ -165,7 +182,9 @@ export default {
         status: undefined,
         gmtCreate: undefined,
         district: undefined,
-        detailedAddress: undefined
+        detailedAddress: undefined,
+        community: undefined,
+        communityId: undefined
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -178,33 +197,47 @@ export default {
       pvData: [],
       rules: {
         name: [{ required: true, message: '请填写名字', trigger: 'change' }],
-        modelNumber: [{ required: true, message: '请填写型号', trigger: 'blur' }]
+        modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }]
       },
       downloadLoading: false,
       modelOptions: [],
       loadingModel: false,
       communityOptions: [],
-      loadingCommunity: false
+      loadingCommunity: false,
+      statusOptions: [{
+        value: '0',
+        label: '正常'
+      }, {
+        value: '1',
+        label: '损坏'
+      }, {
+        value: '2',
+        label: '报废'
+      }]
     }
   },
   created() {
     this.getList()
   },
   methods: {
+    handleChangeCommunity(value) {
+      this.temp.communityId = value.id
+    },
     getCommunityOptions(keyword) {
       if (keyword !== '') {
-        this.loadingModel = true
-        getModelList({ modelNumber: keyword, name: keyword }).then(response => {
-          this.modelOptions = response.data.records
-          this.loadingModel = false
+        this.loadingCommunity = true
+        getCommunityList({ name: keyword }).then(response => {
+          this.communityOptions = response.data.records
+          this.loadingCommunity = false
         })
       } else {
-        this.modelOptions = []
+        this.communityOptions = []
       }
     },
     handleChangeModel(value) {
       this.temp.modelName = value.name
       this.temp.modelId = value.modelId
+      this.temp.modelNumber = value.modelNumber
     },
     getList() {
       this.listLoading = true
@@ -253,7 +286,7 @@ export default {
         remark: '',
         timestamp: new Date(),
         title: '',
-        status: 'published',
+        status: '',
         type: '',
         pictureList: [],
         picture: undefined
@@ -270,16 +303,17 @@ export default {
     createData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          // addModel(this.temp).then(() => {
-          //   this.list.unshift(this.temp)
-          //   this.dialogFormVisible = false
-          //   this.$notify({
-          //     title: '成功',
-          //     message: '创建成功',
-          //     type: 'success',
-          //     duration: 2000
-          //   })
-          // })
+          this.temp.pictureList = this.temp.pictureList.map(item => (item.response.data))
+          addFitnessEquipment(this.temp).then(() => {
+            this.list.unshift(this.temp)
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '创建成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
         }
       })
     },

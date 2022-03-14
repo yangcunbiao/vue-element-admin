@@ -7,3 +7,19 @@ export function getFitnessEquipmentList(data) {
     data
   })
 }
+
+export function addFitnessEquipment(data) {
+  return request({
+    url: '/fitnessEquipment/add',
+    method: 'post',
+    data
+  })
+}
+
+export function updateFitnessEquipment(data) {
+  return request({
+    url: '/fitnessEquipment/update',
+    method: 'post',
+    data
+  })
+}
