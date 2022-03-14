@@ -98,7 +98,7 @@
 </template>
 
 <script>
-import { getList, addCommunity, updateCommunity, deleteCommunity } from '@/api/community'
+import { getCommunityList, addCommunity, updateCommunity, deleteCommunity } from '@/api/community'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -167,7 +167,7 @@ export default {
   methods: {
     getList() {
       this.listLoading = true
-      getList(this.listQuery).then(response => {
+      getCommunityList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
 

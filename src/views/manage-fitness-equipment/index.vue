@@ -71,14 +71,18 @@
         <!-- <el-form-item label="器材编号" prop="serialNumber">
           <el-input v-model="temp.serialNumber" />
         </el-form-item> -->
-        <el-form-item label="器材名称" prop="modelNumber">
-          <el-input v-model="temp.modelName" />
+        <el-form-item label="器材名称" prop="modelName">
+          <el-input v-model="temp.modelName" :disabled="true" />
         </el-form-item>
         <el-form-item label="型号" prop="modelNumber">
-          <el-input v-model="temp.modelNumber" />
+          <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
+            <el-option v-for="item in modelOptions" :key="item.modelNumber" :label="item.modelNumber" :value="item" />
+          </el-select>
         </el-form-item>
         <el-form-item label="社区" prop="communityName">
-          <el-input v-model="temp.communityName" />
+          <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
+            <el-option v-for="item in modelOptions" :key="item.modelNumber" :label="item.modelNumber" :value="item" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-input v-model="temp.status" />
@@ -113,8 +117,8 @@
 </template>
 
 <script>
-import { getList } from '@/api/fitness-equipment'
-// import { getModelList } from '@/api/model'
+import { getFitnessEquipmentList } from '@/api/fitness-equipment'
+import { getModelList } from '@/api/model'
 import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
@@ -152,8 +156,10 @@ export default {
       temp: {
         id: undefined,
         serialNumber: undefined,
+        model: undefined,
         modelNumber: undefined,
         modelName: undefined,
+        modelId: undefined,
         pictureList: [],
         communityName: undefined,
         status: undefined,
@@ -172,18 +178,37 @@ export default {
       pvData: [],
       rules: {
         name: [{ required: true, message: '请填写名字', trigger: 'change' }],
-        modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }]
+        modelNumber: [{ required: true, message: '请填写型号', trigger: 'blur' }]
       },
-      downloadLoading: false
+      downloadLoading: false,
+      modelOptions: [],
+      loadingModel: false,
+      communityOptions: [],
+      loadingCommunity: false
     }
   },
   created() {
     this.getList()
   },
   methods: {
+    getCommunityOptions(keyword) {
+      if (keyword !== '') {
+        this.loadingModel = true
+        getModelList({ modelNumber: keyword, name: keyword }).then(response => {
+          this.modelOptions = response.data.records
+          this.loadingModel = false
+        })
+      } else {
+        this.modelOptions = []
+      }
+    },
+    handleChangeModel(value) {
+      this.temp.modelName = value.name
+      this.temp.modelId = value.modelId
+    },
     getList() {
       this.listLoading = true
-      getList(this.listQuery).then(response => {
+      getFitnessEquipmentList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
 
@@ -208,6 +233,17 @@ export default {
       const { prop, order } = data
       if (prop === 'id') {
         this.sortByID(order)
+      }
+    },
+    getModelOptions(keyword) {
+      if (keyword !== '') {
+        this.loadingModel = true
+        getModelList({ modelNumber: keyword, name: keyword }).then(response => {
+          this.modelOptions = response.data.records
+          this.loadingModel = false
+        })
+      } else {
+        this.options = []
       }
     },
     resetTemp() {

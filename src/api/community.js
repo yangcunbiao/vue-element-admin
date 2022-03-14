@@ -1,6 +1,6 @@
 import request from '@/utils/request'
 
-export function getList(data) {
+export function getCommunityList(data) {
   return request({
     url: '/community/list',
     method: 'post',
