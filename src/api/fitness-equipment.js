@@ -23,3 +23,10 @@ export function updateFitnessEquipment(data) {
     data
   })
 }
+
+export function getFitnessEquipmentDetail(data) {
+  return request({
+    url: '/fitnessEquipment/getDetail/' + data,
+    method: 'get'
+  })
+}

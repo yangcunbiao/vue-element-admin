@@ -44,7 +44,9 @@
       </el-table-column>
       <el-table-column label="状态" width="70px" align="center">
         <template slot-scope="{row}">
-          <span>{{ row.status }}</span>
+          <el-tag :type="row.status | statusFilter">
+            {{ row.status }}
+          </el-tag>
         </template>
       </el-table-column>
       <el-table-column label="安装时间" align="center" width="120px">
@@ -54,10 +56,13 @@
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
+          <el-button type="primary" size="mini" @click="handleDetail(row)">
+            详情
+          </el-button>
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
             {{ $t('table.edit') }}
           </el-button>
-          <el-button v-if="row.status!='deleted'" size="mini" type="danger" @click="handleDelete(row,$index)">
+          <el-button size="mini" type="danger" @click="handleDelete(row,$index)">
             {{ $t('table.delete') }}
           </el-button>
         </template>
@@ -72,7 +77,7 @@
           <el-input v-model="temp.serialNumber" />
         </el-form-item> -->
         <el-form-item label="器材名称" prop="modelName">
-          <el-input v-model="temp.modelName" :disabled="true" />
+          <el-input v-model="temp.modelName" :disabled="true" placeholder="选择型号后自动填写" />
         </el-form-item>
         <el-form-item label="型号" prop="modelNumber">
           <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
@@ -111,20 +116,22 @@
       </div>
     </el-dialog>
 
-    <el-dialog :visible.sync="dialogPvVisible" title="Reading statistics">
-      <el-table :data="pvData" border fit highlight-current-row style="width: 100%">
-        <el-table-column prop="key" label="Channel" />
-        <el-table-column prop="pv" label="Pv" />
-      </el-table>
-      <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="dialogPvVisible = false">{{ $t('table.confirm') }}</el-button>
-      </span>
+    <el-dialog :visible.sync="dialogPvVisible" title="详情" width="80%">
+      <el-descriptions title="用户信息" label-width="100px" style="width: 400px; margin-left:50px;" label-position="left">
+        <el-descriptions-item label="用户名">kooriookami</el-descriptions-item>
+        <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
+        <el-descriptions-item label="居住地">苏州市</el-descriptions-item>
+        <el-descriptions-item label="备注">
+          <el-tag size="small">学校</el-tag>
+        </el-descriptions-item>
+        <el-descriptions-item label="联系地址">江苏省苏州市吴中区吴中大道 1188 号</el-descriptions-item>
+      </el-descriptions>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getFitnessEquipmentList, addFitnessEquipment } from '@/api/fitness-equipment'
+import { getFitnessEquipmentList, addFitnessEquipment, getFitnessEquipmentDetail } from '@/api/fitness-equipment'
 import { getModelList } from '@/api/model'
 import { getCommunityList } from '@/api/community'
 import waves from '@/directive/waves' // waves directive
@@ -139,9 +146,9 @@ export default {
   filters: {
     statusFilter(status) {
       const statusMap = {
-        published: 'success',
-        draft: 'info',
-        deleted: 'danger'
+        正常: 'success',
+        损坏: 'warning',
+        报废: 'danger'
       }
       return statusMap[status]
     },
@@ -197,7 +204,8 @@ export default {
       pvData: [],
       rules: {
         name: [{ required: true, message: '请填写名字', trigger: 'change' }],
-        modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }]
+        modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }],
+        modelName: [{ required: true, message: '请填写器材名称', trigger: 'change' }]
       },
       downloadLoading: false,
       modelOptions: [],
@@ -213,13 +221,24 @@ export default {
       }, {
         value: '2',
         label: '报废'
-      }]
+      }],
+      fitnessEquipmentDetail: undefined
     }
   },
   created() {
     this.getList()
   },
   methods: {
+    handleDetail(row) {
+      console.log(row)
+      getFitnessEquipmentDetail(row.id).then(response => {
+        this.fitnessEquipmentDetail = response.data
+        this.dialogPvVisible = true
+      }).catch(err => {
+        console.log(err)
+      })
+      console.log(this.fitnessEquipmentDetail)
+    },
     handleChangeCommunity(value) {
       this.temp.communityId = value.id
     },
@@ -236,7 +255,7 @@ export default {
     },
     handleChangeModel(value) {
       this.temp.modelName = value.name
-      this.temp.modelId = value.modelId
+      this.temp.modelId = value.id
       this.temp.modelNumber = value.modelNumber
     },
     getList() {
@@ -244,11 +263,7 @@ export default {
       getFitnessEquipmentList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
-
-        // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -289,7 +304,11 @@ export default {
         status: '',
         type: '',
         pictureList: [],
-        picture: undefined
+        picture: undefined,
+        modelOptions: [],
+        loadingModel: false,
+        communityOptions: [],
+        loadingCommunity: false
       }
     },
     handleCreate() {
