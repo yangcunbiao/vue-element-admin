@@ -37,6 +37,11 @@
           <span>{{ row.modelName }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="器材编号" width="150px">
+        <template slot-scope="{row}">
+          <span>{{ row.modelNumber }}</span>
+        </template>
+      </el-table-column>
       <el-table-column label="社区" width="70px" align="center">
         <template slot-scope="{row}">
           <span>{{ row.communityName }}</span>
@@ -73,19 +78,19 @@
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
-        <!-- <el-form-item label="器材编号" prop="serialNumber">
-          <el-input v-model="temp.serialNumber" />
-        </el-form-item> -->
+        <el-form-item v-if="dialogStatus === 'update'" label="器材编号" prop="serialNumber">
+          <el-input v-model="temp.serialNumber" :disabled="true" />
+        </el-form-item>
         <el-form-item label="器材名称" prop="modelName">
           <el-input v-model="temp.modelName" :disabled="true" placeholder="选择型号后自动填写" />
         </el-form-item>
         <el-form-item label="型号" prop="modelNumber">
-          <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
+          <el-select v-model="temp.model" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" :disabled="dialogStatus === 'update'" @change="handleChangeModel">
             <el-option v-for="item in modelOptions" :key="item.modelNumber" :label="item.modelNumber" :value="item" />
           </el-select>
         </el-form-item>
         <el-form-item label="社区" prop="communityName">
-          <el-select v-model="temp.community" :filterable="true" :remote="true" placeholder="请输入小区名" :remote-method="getCommunityOptions" :loading="loadingCommunity" value-key="name" @change="handleChangeCommunity">
+          <el-select v-model="temp.community" :filterable="true" :remote="true" placeholder="请输入小区名" :remote-method="getCommunityOptions" :loading="loadingCommunity" value-key="name" :disabled="dialogStatus === 'update'" @change="handleChangeCommunity">
             <el-option v-for="item in communityOptions" :key="item.id" :label="item.name" :value="item" style="width: 400px">
               <span style="float: left;">{{ item.name }}</span>
               <span style="float: right;color:#ccc;">{{ item.province }}/{{ item.city }}/{{ item.district }}</span>
@@ -103,7 +108,7 @@
           </el-select>
         </el-form-item>
         <el-form-item label="图片" prop="picture">
-          <upload :list="temp.pictureList" :limit="3" type="image" @change="handleUpload" />
+          <upload :list="temp.pictureList" :limit="3" type="image" :disabled="dialogStatus === 'update'" @change="handleUpload" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -117,21 +122,25 @@
     </el-dialog>
 
     <el-dialog :visible.sync="dialogPvVisible" title="详情" width="80%">
-      <el-descriptions title="用户信息" label-width="100px" style="width: 400px; margin-left:50px;" label-position="left">
-        <el-descriptions-item label="用户名">kooriookami</el-descriptions-item>
-        <el-descriptions-item label="手机号">18100000000</el-descriptions-item>
-        <el-descriptions-item label="居住地">苏州市</el-descriptions-item>
-        <el-descriptions-item label="备注">
-          <el-tag size="small">学校</el-tag>
+      <el-descriptions title="器材信息" label-width="100px" style="width: 80%; margin-left:50px;" label-position="left">
+        <el-descriptions-item label="器材编号">{{ fitnessEquipmentDetail.serialNumber }}</el-descriptions-item>
+        <el-descriptions-item label="器材名称">{{ fitnessEquipmentDetail.modelName }}</el-descriptions-item>
+        <el-descriptions-item label="器材型号">{{ fitnessEquipmentDetail.modelNumber }}</el-descriptions-item>
+        <el-descriptions-item label="社区">{{ fitnessEquipmentDetail.communityName }}</el-descriptions-item>
+        <el-descriptions-item label="地址">{{ fitnessEquipmentDetail.province }}{{ fitnessEquipmentDetail.city }}{{ fitnessEquipmentDetail.district }}{{ fitnessEquipmentDetail.detailedAddress }}</el-descriptions-item>
+        <el-descriptions-item label="状态">
+          <el-tag size="small" :type="fitnessEquipmentDetail.status | statusFilter">{{ fitnessEquipmentDetail.status }}</el-tag>
         </el-descriptions-item>
-        <el-descriptions-item label="联系地址">江苏省苏州市吴中区吴中大道 1188 号</el-descriptions-item>
+        <el-descriptions-item v-if="fitnessEquipmentDetail.pictureList != null&&fitnessEquipmentDetail.pictureList.length > 0" label="图片">
+          <el-image v-for="item in fitnessEquipmentDetail.pictureList" :key="item" style="width:50px;height:50px" :src="item" :preview-src-list="fitnessEquipmentDetail.pictureList" />
+        </el-descriptions-item>
       </el-descriptions>
     </el-dialog>
   </div>
 </template>
 
 <script>
-import { getFitnessEquipmentList, addFitnessEquipment, getFitnessEquipmentDetail } from '@/api/fitness-equipment'
+import { getFitnessEquipmentList, addFitnessEquipment, getFitnessEquipmentDetail, updateFitnessEquipment, deleteFitnessEquipment } from '@/api/fitness-equipment'
 import { getModelList } from '@/api/model'
 import { getCommunityList } from '@/api/community'
 import waves from '@/directive/waves' // waves directive
@@ -222,13 +231,16 @@ export default {
         value: '2',
         label: '报废'
       }],
-      fitnessEquipmentDetail: undefined
+      fitnessEquipmentDetail: {}
     }
   },
   created() {
     this.getList()
   },
   methods: {
+    handleChange(value) {
+      console.log(value)
+    },
     handleDetail(row) {
       console.log(row)
       getFitnessEquipmentDetail(row.id).then(response => {
@@ -240,6 +252,7 @@ export default {
       console.log(this.fitnessEquipmentDetail)
     },
     handleChangeCommunity(value) {
+      console.log(value)
       this.temp.communityId = value.id
     },
     getCommunityOptions(keyword) {
@@ -247,6 +260,7 @@ export default {
         this.loadingCommunity = true
         getCommunityList({ name: keyword }).then(response => {
           this.communityOptions = response.data.records
+          console.log(response.data.records)
           this.loadingCommunity = false
         })
       } else {
@@ -254,6 +268,7 @@ export default {
       }
     },
     handleChangeModel(value) {
+      console.log(value)
       this.temp.modelName = value.name
       this.temp.modelId = value.id
       this.temp.modelNumber = value.modelNumber
@@ -288,6 +303,7 @@ export default {
         this.loadingModel = true
         getModelList({ modelNumber: keyword, name: keyword }).then(response => {
           this.modelOptions = response.data.records
+          console.log(response.data.records)
           this.loadingModel = false
         })
       } else {
@@ -313,6 +329,8 @@ export default {
     },
     handleCreate() {
       this.resetTemp()
+      this.modelOptions = []
+      this.communityOptions = []
       this.dialogStatus = 'create'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -325,6 +343,7 @@ export default {
           this.temp.pictureList = this.temp.pictureList.map(item => (item.response.data))
           addFitnessEquipment(this.temp).then(() => {
             this.list.unshift(this.temp)
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
@@ -338,10 +357,20 @@ export default {
     },
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
+      this.modelOptions = []
+      this.communityOptions = []
       this.temp.timestamp = new Date(this.temp.timestamp)
-      if (this.temp.picture != null) {
-        this.temp.pictureList = [{ url: this.temp.picture, response: { data: this.temp.picture }}]
+      if (row.pictureList != null && row.pictureList.length > 0) {
+        this.temp.pictureList = []
+        for (var u of row.pictureList) {
+          this.temp.pictureList.push({ url: u, response: { data: u }})
+        }
       }
+      this.temp.model = { id: 1, name: row.modelName, modelNumber: row.modelNumber }
+      this.modelOptions.push(this.temp.model)
+      this.temp.community = { id: 1, name: row.communityName }
+      this.communityOptions.push(this.temp.community)
+      console.log(this.temp)
       this.dialogStatus = 'update'
       this.dialogFormVisible = true
       this.$nextTick(() => {
@@ -351,32 +380,35 @@ export default {
     updateData() {
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
-          const tempData = Object.assign({}, this.temp)
+          const tempData = { id: this.temp.id, status: this.temp.status }
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
-          // updateModel(tempData).then(() => {
-          //   const index = this.list.findIndex(v => v.id === this.temp.id)
-          //   this.list.splice(index, 1, this.temp)
-          //   this.dialogFormVisible = false
-          //   this.$notify({
-          //     title: '成功',
-          //     message: '更新成功',
-          //     type: 'success',
-          //     duration: 2000
-          //   })
-          // })
+          updateFitnessEquipment(tempData).then(() => {
+            // const index = this.list.findIndex(v => v.id === this.temp.id)
+            // this.list.splice(index, 1, this.temp)
+            this.getList()
+            this.dialogFormVisible = false
+            this.$notify({
+              title: '成功',
+              message: '更新成功',
+              type: 'success',
+              duration: 2000
+            })
+          })
         }
       })
     },
     handleDelete(row, index) {
-      // deleteModel(row.id).then(() => {
-      //   this.$notify({
-      //     title: '成功',
-      //     message: '删除成功',
-      //     type: 'success',
-      //     duration: 2000
-      //   })
-      // })
-      this.list.splice(index, 1)
+      deleteFitnessEquipment(row.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '删除成功',
+          type: 'success',
+          duration: 2000
+        })
+      }).catch(err => {
+        console.error(err)
+      })
+      this.getList()
     },
     handleUpload(data) {
       this.temp.pictureList = data

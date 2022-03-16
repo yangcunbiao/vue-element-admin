@@ -30,3 +30,10 @@ export function getFitnessEquipmentDetail(data) {
     method: 'get'
   })
 }
+
+export function deleteFitnessEquipment(data) {
+  return request({
+    url: '/fitnessEquipment/delete/' + data,
+    method: 'get'
+  })
+}

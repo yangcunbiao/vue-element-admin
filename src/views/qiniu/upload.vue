@@ -1,6 +1,6 @@
 <template>
   <div class="upload-container">
-    <el-upload :multiple="true" :auto-upload="true" list-type="picture-card" :file-list="list" :before-upload="beforeUpload" :action="uploadAction" :limit="limit" :before-remove="beforeRemove" :on-success="handleUpLoad">
+    <el-upload :multiple="true" :auto-upload="true" list-type="picture-card" :file-list="list" :before-upload="beforeUpload" :action="uploadAction" :limit="limit" :before-remove="beforeRemove" :on-success="handleUpLoad" :disabled="disabled">
       <i slot="default" class="el-icon-plus" />
       <div slot="file" slot-scope="{file}">
         <img
@@ -55,6 +55,11 @@ export default {
       type: Array,
       required: false,
       default: () => { return [] }
+    },
+    disabled: {
+      type: Boolean,
+      required: false,
+      default: false
     }
   },
   data() {
@@ -63,7 +68,6 @@ export default {
       image_uri: [],
       headers: {},
       dialogVisible: false,
-      disabled: false,
       dialogImageUrl: String
     }
   },
