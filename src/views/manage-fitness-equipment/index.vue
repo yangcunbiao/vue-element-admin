@@ -307,7 +307,7 @@ export default {
           this.loadingModel = false
         })
       } else {
-        this.options = []
+        this.modelOptions = []
       }
     },
     resetTemp() {
