@@ -28,4 +28,22 @@ export function getMyWorkOrderList(data) {
     data
   })
 }
-
+export function getWorkOrderDetail(data) {
+  return request({
+    url: '/workOrder/getDetail/' + data,
+    method: 'get'
+  })
+}
+export function checkWorkOrder(data) {
+  return request({
+    url: '/workOrder/check',
+    method: 'post',
+    data
+  })
+}
+export function finishWorkOrder(data) {
+  return request({
+    url: '/workOrder/finish/' + data,
+    method: 'get'
+  })
+}

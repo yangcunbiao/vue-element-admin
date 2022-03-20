@@ -2,7 +2,7 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.name" placeholder="社区名字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
+      <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
       <!-- <router-link
@@ -37,7 +37,7 @@
 
       <el-table-column align="center" label="类型" width="95">
         <template slot-scope="{row}">
-          <span>{{ row.type }}</span>
+          <span>{{ row.type | typeFilter }}</span>
         </template>
       </el-table-column>
 
@@ -50,15 +50,9 @@
       </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row}">
-          <router-link
-            tag="a"
-            target="_blank"
-            :to="{ name: 'workOrderDetail', path:'/workOrderDetail/'+row.id, query: {} }"
-          >
-            <el-button type="primary" size="mini" effect="plain">
-              查看
-            </el-button>
-          </router-link>
+          <el-button type="primary" size="mini" effect="plain" @click="handleWatch(row)">
+            查看
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -125,6 +119,13 @@ export default {
     this.getList()
   },
   methods: {
+    handleWatch(row) {
+      console.log(row)
+      this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: row.id }})
+    },
+    handleFilter() {
+      this.getList()
+    },
     handleCreate() {
       this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: {}})
     },
@@ -134,16 +135,22 @@ export default {
         getWaitHandleWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
           this.loading = false
+        }).catch(err => {
+          console.error(err)
         })
       } else if (this.type === 'all') {
         getWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
           this.loading = false
+        }).catch(err => {
+          console.error(err)
         })
       } else {
         getMyWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
           this.loading = false
+        }).catch(err => {
+          console.error(err)
         })
       }
     }

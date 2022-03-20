@@ -228,7 +228,9 @@ export default {
       })
     },
     createData() {
-      this.temp.picture = this.temp.pictureList[0].response.data
+      if (this.temp.pictureList != null && this.temp.pictureList.length > 0) {
+        this.temp.picture = this.temp.pictureList[0].response.data
+      }
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           addModel(this.temp).then(() => {

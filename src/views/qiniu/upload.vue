@@ -1,6 +1,18 @@
 <template>
   <div class="upload-container">
-    <el-upload :multiple="true" :auto-upload="true" list-type="picture-card" :file-list="list" :before-upload="beforeUpload" :action="uploadAction" :limit="limit" :before-remove="beforeRemove" :on-success="handleUpLoad" :disabled="disabled">
+    <el-upload
+      :multiple="true"
+      :auto-upload="true"
+      list-type="picture-card"
+      :headers="headers"
+      :file-list="list"
+      :before-upload="beforeUpload"
+      :action="uploadAction"
+      :limit="limit"
+      :before-remove="beforeRemove"
+      :on-success="handleUpLoad"
+      :disabled="disabled"
+    >
       <i slot="default" class="el-icon-plus" />
       <div slot="file" slot-scope="{file}">
         <img
@@ -71,7 +83,7 @@ export default {
       dialogImageUrl: String
     }
   },
-  create() {
+  mounted() {
     const token = getToken()
     this.headers = { 'Authorization': token }
   },
@@ -98,7 +110,7 @@ export default {
       this.dialogVisible = true
     },
     beforeRemove(file, fileList) {
-      return this.$confirm(`确定移除 ${file.name}？`)
+      // return this.$confirm(`确定移除 ${file.name}？`)
     },
     handleUpLoad(response, file, fileList) {
       this.$emit('change', fileList)
