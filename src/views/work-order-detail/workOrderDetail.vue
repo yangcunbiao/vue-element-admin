@@ -165,8 +165,9 @@ export default {
     }
   },
   mounted() {
-    if (this.$route.query) {
+    if (this.$route.query.workOrderId != null) {
       console.log(this.$route.query)
+      console.log(1)
       this.edit(this.$route.query.workOrderId)
       this.detailType = 'watch'
     } else {

@@ -1,10 +1,14 @@
 <template>
   <div class="tab-container">
-    <el-tabs v-model="activeName" style="margin-top:15px;" type="border-card">
-      <el-tab-pane v-for="item in tabMapOptions" :key="item.key" :label="item.label" :name="item.key" @tab-click="handleClick">
-        <keep-alive>
-          <tab-pane v-if="activeName==item.key" ref="tabPane" :type="item.key" />
-        </keep-alive>
+    <el-tabs v-model="activeName" style="margin-top:15px;" type="border-card" @tab-click="handleClick">
+      <el-tab-pane key="all" label="全部工单" name="all">
+        <tab-pane v-if="activeName=='all'" ref="all" type="all" />
+      </el-tab-pane>
+      <el-tab-pane key="waitHandle" label="待处理工单" name="waitHandle">
+        <tab-pane v-if="activeName=='waitHandle'" ref="waitHandle" type="waitHandle" />
+      </el-tab-pane>
+      <el-tab-pane key="myWorkOrder" label="我的工单" name="myWorkOrder">
+        <tab-pane v-if="activeName=='myWorkOrder'" ref="myWorkOrder" type="myWorkOrder" />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -39,9 +43,12 @@ export default {
     }
   },
   methods: {
-    handleClick(val) {
-      console.log(val)
-      val.getList()
+    handleClick(tab, event) {
+      // console.log(this.$refs)
+      // console.log(this.$refs[this.activeName])
+      // console.log(tab.$children[0])
+      // tab.$children[0].getList()
+      // this.$refs[this.activeName].getList()
     }
   }
 }

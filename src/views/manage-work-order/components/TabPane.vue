@@ -115,6 +115,10 @@ export default {
       this.getList()
     }
   },
+  mounted() {
+    console.log(1)
+    this.getList()
+  },
   created() {
     this.getList()
   },
