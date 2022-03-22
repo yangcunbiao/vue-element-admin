@@ -12,6 +12,7 @@
       :before-remove="beforeRemove"
       :on-success="handleUpLoad"
       :disabled="disabled"
+      :class="{disabled:isMax}"
     >
       <i slot="default" class="el-icon-plus" />
       <div slot="file" slot-scope="{file}">
@@ -80,14 +81,27 @@ export default {
       image_uri: [],
       headers: {},
       dialogVisible: false,
-      dialogImageUrl: String
+      dialogImageUrl: String,
+      isMax: false
     }
   },
   mounted() {
     const token = getToken()
     this.headers = { 'Authorization': token }
+    if (this.list.length > this.limit || this.disabled) {
+      this.isMax = true
+    } else {
+      this.isMax = true
+    }
   },
   methods: {
+    handleChange(file, fileList) {
+      if (fileList.length > this.limit || this.disabled) {
+        this.isMax = true
+      } else {
+        this.isMax = true
+      }
+    },
     beforeUpload(file) {
       var fileType = file.type
       return new Promise((resolve, reject) => {
@@ -119,3 +133,8 @@ export default {
 }
 
 </script>
+<style>
+.disabled .el-upload--picture-card{
+    display: none
+}
+</style>

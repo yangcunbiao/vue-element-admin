@@ -5,18 +5,11 @@
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
-      <!-- <router-link
-        tag="a"
-        target="_blank"
-        :push="{ name: 'workOrderDetail', path:'/workOrderDetail', query: {} }"
-      >
-      </router-link> -->
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <!-- </router-link> -->
     </div>
-    <el-table :data="list" border fit highlight-current-row style="width: 100%">
+    <el-table v-loading="loading" :data="list" border fit highlight-current-row style="width: 100%">
       <el-table-column width="180px" align="center" label="工单号">
         <template slot-scope="{row}">
           <span>{{ row.serialNumber }}</span>

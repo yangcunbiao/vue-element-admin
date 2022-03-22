@@ -71,7 +71,7 @@
       </el-row>
       <el-row>
         <el-form-item v-if="form.type === 0" label="图片" prop="content">
-          <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" @change="handleUpload" />
+          <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 30%;" @change="handleUpload" />
         </el-form-item>
       </el-row>
       <el-row>
@@ -166,15 +166,9 @@ export default {
   },
   mounted() {
     if (this.$route.query.workOrderId != null) {
-      console.log(this.$route.query)
-      console.log(1)
       this.edit(this.$route.query.workOrderId)
-      this.detailType = 'watch'
     } else {
       this.add()
-      this.form.applicantId = this.$store.getters.id
-      this.form.applicant = this.$store.getters.name
-      this.detailType = 'create'
     }
   },
   methods: {
@@ -187,6 +181,8 @@ export default {
           duration: 2000
         })
         this.edit(this.form.id)
+        this.$forceUpdate()
+        console.log(this.form, this.detailType)
       })
     },
     handleCheck(result) {
@@ -198,22 +194,25 @@ export default {
           duration: 2000
         })
         // this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
-        this.getList()
+        this.edit(this.form.id)
         this.$forceUpdate()
-        // this.edit(this.form.id)
       })
     },
     edit(id) {
+      this.detailType = 'watch'
       getWorkOrderDetail(id).then(response => {
         // this.form = Object.assign({}, response.data)
         this.form = response.data
         this.form.applicantId = this.form.applicant.id
         this.form.applicant = this.form.applicant.name
+        this.modelOptions = []
         this.modelOptions.push(this.form.model)
         this.form.modelName = this.form.model.name
+        this.communityOptions = []
         this.communityOptions.push(this.form.community)
         if (this.form.fitnessEquipment != null) {
           this.form.fitnessEquipmentSerialNumber = this.form.fitnessEquipment.serialNumber
+          this.fitnessEquipmentOptions = []
           this.fitnessEquipmentOptions.push(this.form.fitnessEquipment)
         }
         console.log(this.form)
@@ -243,7 +242,7 @@ export default {
               duration: 2000
             })
             this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: response.data }})
-            this.getList()
+            this.edit(response.data)
             this.$forceUpdate()
           }).catch(err => {
             console.log(err)
@@ -310,6 +309,9 @@ export default {
       }
     },
     add() {
+      this.form.applicantId = this.$store.getters.id
+      this.form.applicant = this.$store.getters.name
+      this.detailType = 'create'
       getCommunityList({ userId: this.$store.getters.id }).then(response => {
         const community = response.data.records[0]
         this.form.community = community
