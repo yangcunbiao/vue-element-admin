@@ -197,7 +197,10 @@ export default {
           type: 'success',
           duration: 2000
         })
-        this.edit(this.form.id)
+        this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
+        this.getList()
+        this.$forceUpdate()
+        // this.edit(this.form.id)
       })
     },
     edit(id) {
@@ -239,6 +242,9 @@ export default {
               type: 'success',
               duration: 2000
             })
+            this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: response.data }})
+            this.getList()
+            this.$forceUpdate()
           }).catch(err => {
             console.log(err)
           })
