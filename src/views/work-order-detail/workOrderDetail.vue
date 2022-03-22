@@ -197,7 +197,7 @@ export default {
           type: 'success',
           duration: 2000
         })
-        this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
+        // this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
         this.getList()
         this.$forceUpdate()
         // this.edit(this.form.id)
