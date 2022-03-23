@@ -64,7 +64,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
@@ -84,7 +84,7 @@
           <el-input v-model="temp.high" type="number" />
         </el-form-item>
         <el-form-item label="图片" prop="picture">
-          <upload :list="temp.pictureList" :limit="1" type="image" @change="handleUpload" />
+          <upload ref="upload" :list="temp.pictureList" :limit="1" type="image" @change="handleUpload" @notify="uploadNotify" />
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -177,6 +177,9 @@ export default {
     this.getList()
   },
   methods: {
+    uploadNotify(result) {
+      this.$notify(result)
+    },
     getList() {
       this.listLoading = true
       getModelList(this.listQuery).then(response => {
@@ -259,7 +262,9 @@ export default {
       })
     },
     updateData() {
-      this.temp.picture = this.temp.pictureList[0].response.data
+      if (this.temp.pictureList != null && this.temp.pictureList.length > 0) {
+        this.temp.picture = this.temp.pictureList[0].response.data
+      }
       this.$refs['dataForm'].validate((valid) => {
         if (valid) {
           const tempData = Object.assign({}, this.temp)

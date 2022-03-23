@@ -1,6 +1,7 @@
 <template>
   <div class="upload-container">
     <el-upload
+      ref="upload"
       :multiple="true"
       :auto-upload="true"
       list-type="picture-card"
@@ -13,6 +14,7 @@
       :on-success="handleUpLoad"
       :disabled="disabled"
       :class="{disabled:isMax}"
+      :on-remove="afterRemove"
     >
       <i slot="default" class="el-icon-plus" />
       <div slot="file" slot-scope="{file}">
@@ -31,6 +33,7 @@
           <span
             v-if="!disabled"
             class="el-upload-list__item-delete"
+            @click="handleRemove(file)"
           >
             <i class="el-icon-delete" />
           </span>
@@ -85,29 +88,62 @@ export default {
       isMax: false
     }
   },
+  watch: {
+    list() {
+      console.log('change')
+      this.checkIsMax()
+    }
+  },
   mounted() {
     const token = getToken()
     this.headers = { 'Authorization': token }
-    if (this.list.length > this.limit || this.disabled) {
-      this.isMax = true
-    } else {
-      this.isMax = true
-    }
+    this.checkIsMax()
   },
   methods: {
-    handleChange(file, fileList) {
-      if (fileList.length > this.limit || this.disabled) {
+    handleRemove(file) {
+      const fileList = this.$refs.upload.fileList
+      const index = fileList.findIndex(fileItem => {
+        return fileItem.url === file.url
+      })
+      console.log(this.list)
+      fileList.splice(index, 1)
+      const fileList1 = this.$refs.upload.uploadFiles
+      const index1 = fileList1.findIndex(fileItem => {
+        return fileItem.url === file.url
+      })
+      fileList1.splice(index1, 1)
+      const index2 = this.list.findIndex(fileItem => {
+        return fileItem.url === file.url
+      })
+      this.list.splice(index2, 1)
+      this.checkIsMax()
+    },
+    afterRemove(file, fileList) {
+      this.$emit('notify', {
+        title: '成功',
+        message: '成功删除图片',
+        type: 'success',
+        duration: 2000
+      })
+    },
+    checkIsMax() {
+      // || this.$refs.upload.fileList.length >= this.limit || this.$refs.upload.uploadFiles.length >= this.limit
+      if (this.list.length >= this.limit || this.disabled === true) {
         this.isMax = true
       } else {
-        this.isMax = true
+        this.isMax = false
       }
+    },
+    handleChange(file, fileList) {
+      // || this.list.length >= this.limit || this.$refs.upload.fileList.length >= this.limit || this.$refs.upload.uploadFiles.length >= this.limit
+      this.checkIsMax()
     },
     beforeUpload(file) {
       var fileType = file.type
       return new Promise((resolve, reject) => {
         if (this.fileType === FILE_TYPE_IMG) {
           if (fileType.indexOf('image') < 0) {
-            this.$notify({
+            this.$emit('notify', {
               title: '错误',
               message: '请上传图片',
               type: 'error',
@@ -125,9 +161,18 @@ export default {
     },
     beforeRemove(file, fileList) {
       // return this.$confirm(`确定移除 ${file.name}？`)
+      console.log(1)
+      return true
     },
     handleUpLoad(response, file, fileList) {
       this.$emit('change', fileList)
+      this.$emit('notify', {
+        title: '成功',
+        message: '上传成功',
+        type: 'success',
+        duration: 2000
+      })
+      this.checkIsMax()
     }
   }
 }
