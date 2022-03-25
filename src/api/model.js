@@ -30,3 +30,10 @@ export function deleteModel(data) {
     method: 'get'
   })
 }
+
+export function getRecommendModel(data) {
+  return request({
+    url: '/getRecommendModel/delete/' + data,
+    method: 'get'
+  })
+}

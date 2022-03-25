@@ -18,7 +18,15 @@
       <el-row>
         <el-col :span="11">
           <el-form-item label="申请人" prop="applicant">
-            <el-input v-model="form.applicant" :disabled="true" />
+            <el-input v-model="form.applicant" :disabled="true" style="width:200px;" />
+            <el-popover
+              placement="right"
+              width="400"
+              trigger="click"
+            >
+              <span>联系电话：{{ form.applicant.mobilePhoneNumber }}</span>
+              <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
+            </el-popover>
           </el-form-item>
         </el-col>
         <el-col :span="11" :offset="2">
@@ -29,6 +37,14 @@
                 <span style="float: right;color:#ccc;">{{ item.province }}/{{ item.city }}/{{ item.district }}</span>
               </el-option>
             </el-select>
+            <el-popover
+              placement="right"
+              width="400"
+              trigger="click"
+            >
+              <span>详细地址：{{ form.community.district }}{{ form.community.detailedAddress }}</span>
+              <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
+            </el-popover>
           </el-form-item>
         </el-col>
       </el-row>
@@ -54,7 +70,22 @@
             </el-select>
           </el-form-item>
         </el-col>
-
+        <el-col :span="11" :offset="2">
+          <el-form-item v-if="(form.type === 0&&detailType==='create')||(form.type === 0&&(form.status===0||form.status===2||form.status===4))" label="维修员">
+            <el-select v-model="form.repairman" :disabled="detailType === 'watch'" :filterable="true" :remote="true" placeholder="请指派维修员" :remote-method="getRepairmanOptions" :loading="loadingRepairman" value-key="name" @change="handleChangeRepairman">
+              <el-option v-for="item in repairmanOptions" :key="item.id" :label="item.name" :value="item" />
+            </el-select>
+            <el-popover
+              v-if="form.repairman != null"
+              placement="right"
+              width="400"
+              trigger="click"
+            >
+              <span>联系电话：{{ form.repairman.mobilePhoneNumber }}</span>
+              <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
+            </el-popover>
+          </el-form-item>
+        </el-col>
       </el-row>
       <el-row style="margin-top:50px;">
         <el-form-item label="内容" prop="content">
@@ -71,7 +102,7 @@
       </el-row>
       <el-row>
         <el-form-item v-if="form.type === 0" label="图片" prop="content">
-          <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 30%;" @change="handleUpload" />
+          <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 200px;" @change="handleUpload" />
         </el-form-item>
       </el-row>
       <el-row>
@@ -119,6 +150,7 @@ import { getFitnessEquipmentList } from '@/api/fitness-equipment'
 import Upload from '@/views/qiniu/upload.vue'
 import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder } from '@/api/work-order'
 import permission from '@/directive/permission/index.js'
+import { getRepairman } from '@/api/user'
 
 export default {
   components: { Upload },
@@ -141,7 +173,9 @@ export default {
         modelNumber: null,
         pictureList: [],
         applicant: null,
-        status: null
+        applicantInfo: null,
+        status: null,
+        repairman: null
       },
       rules: {},
       communityOptions: [],
@@ -161,7 +195,9 @@ export default {
         }
       ],
       detailType: null,
-      currentUserId: this.$store.getters.id
+      currentUserId: this.$store.getters.id,
+      repairmanOptions: [],
+      loadingRepairman: false
     }
   },
   mounted() {
@@ -172,6 +208,22 @@ export default {
     }
   },
   methods: {
+    handleChangeRepairman(value) {
+      this.form.repairman = value
+      this.form.repairmanId = value.id
+    },
+    getRepairmanOptions(keyword) {
+      if (keyword !== '') {
+        this.loadingRepairman = true
+        getRepairman(keyword).then(response => {
+          this.repairmanOptions = response.data
+          this.loadingRepairman = false
+        })
+      } else {
+        this.repairmanOptions = []
+        this.loadingRepairman = false
+      }
+    },
     handleFinish() {
       finishWorkOrder(this.form.id).then(() => {
         this.$notify({
@@ -186,7 +238,7 @@ export default {
       })
     },
     handleCheck(result) {
-      checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.$store.getters.id }).then(response => {
+      checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.form.repairmanId }).then(response => {
         this.$notify({
           title: '成功',
           message: '审核成功',
@@ -203,6 +255,7 @@ export default {
       getWorkOrderDetail(id).then(response => {
         // this.form = Object.assign({}, response.data)
         this.form = response.data
+        this.form.applicantInfo = this.form.applicant
         this.form.applicantId = this.form.applicant.id
         this.form.applicant = this.form.applicant.name
         this.modelOptions = []
@@ -210,6 +263,11 @@ export default {
         this.form.modelName = this.form.model.name
         this.communityOptions = []
         this.communityOptions.push(this.form.community)
+        if (this.form.repairman != null) {
+          this.form.repairmanId = this.form.repairman.id
+          this.repairmanOptions = []
+          this.repairmanOptions.push(this.form.repairman)
+        }
         if (this.form.fitnessEquipment != null) {
           this.form.fitnessEquipmentSerialNumber = this.form.fitnessEquipment.serialNumber
           this.fitnessEquipmentOptions = []
@@ -273,6 +331,7 @@ export default {
         })
       } else {
         this.fitnessEquipmentOptions = []
+        this.loadingFitnessEquipment = false
       }
     },
     handleChangeCommunity(value) {
@@ -294,6 +353,7 @@ export default {
         })
       } else {
         this.communityOptions = []
+        this.loadingCommunity = false
       }
     },
     getModelOptions(keyword) {
@@ -306,6 +366,7 @@ export default {
         })
       } else {
         this.modelOptions = []
+        this.loadingModel = false
       }
     },
     add() {

@@ -29,3 +29,11 @@ export function logout() {
     method: 'post'
   })
 }
+
+export function getRepairman(username) {
+  return request({
+    url: '/user/getRepairman',
+    method: 'get',
+    params: { userName: username }
+  })
+}
