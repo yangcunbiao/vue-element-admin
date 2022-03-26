@@ -195,6 +195,30 @@ export const asyncRoutes = [
     ],
     hidden: true
   },
+  {
+    path: '/manageUser',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/mange-user/index'),
+        name: 'mangeUser',
+        meta: { title: '用户管理', icon: 'user' }
+      }
+    ]
+  },
+  {
+    path: '/recommendModel',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/recommend-model/index'),
+        name: 'recommendModel',
+        meta: { title: '器材推荐', icon: 'recommend' }
+      }
+    ]
+  },
 
   /** when your routing map is too long, you can split it into small modules **/
   componentsRouter,

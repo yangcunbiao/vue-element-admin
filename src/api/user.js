@@ -37,3 +37,35 @@ export function getRepairman(username) {
     params: { userName: username }
   })
 }
+
+export function getUserList(data) {
+  return request({
+    url: '/user/getUserList',
+    method: 'post',
+    data
+  })
+}
+
+export function addUser(data) {
+  return request({
+    url: '/user/addUser',
+    method: 'post',
+    data
+  })
+}
+
+export function updateUser(data) {
+  return request({
+    url: '/user/updateUser',
+    method: 'post',
+    data
+  })
+}
+
+export function checkAccount(account) {
+  return request({
+    url: '/user/checkAccount',
+    method: 'get',
+    params: { account: account }
+  })
+}
