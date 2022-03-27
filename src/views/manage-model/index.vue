@@ -10,9 +10,6 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        {{ $t('table.export') }}
-      </el-button> -->
     </div>
 
     <el-table
@@ -193,7 +190,7 @@ export default {
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleModifyStatus(row, status) {
@@ -270,8 +267,7 @@ export default {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
           updateModel(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',

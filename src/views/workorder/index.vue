@@ -10,9 +10,6 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        {{ $t('table.export') }}
-      </el-button> -->
     </div>
 
     <el-table
@@ -64,7 +61,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
@@ -182,15 +179,12 @@ export default {
       getModelList(this.listQuery).then(response => {
         this.list = response.data.records
         this.total = response.data.total
-
         // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.listLoading = false
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleModifyStatus(row, status) {

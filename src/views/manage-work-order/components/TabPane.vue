@@ -1,7 +1,14 @@
 <template>
   <div class="app-container">
     <div class="filter-container">
-      <el-input v-model="listQuery.name" placeholder="社区名字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.serialNumber" placeholder="工单号" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-input v-model="listQuery.title" placeholder="标题" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
+      <el-select v-model="listQuery.type" placeholder="类型" style="width: 200px;" class="filter-item">
+        <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
+      <el-select v-model="listQuery.status" placeholder="状态" style="width: 200px;" class="filter-item">
+        <el-option v-for="item in statusOptions" :key="item.value" :label="item.label" :value="item.value" />
+      </el-select>
       <el-button class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
@@ -49,13 +56,16 @@
         </template>
       </el-table-column>
     </el-table>
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
   </div>
 </template>
 
 <script>
 import { getWorkOrderList, getWaitHandleWorkOrderList, getMyWorkOrderList } from '@/api/work-order'
+import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 
 export default {
+  components: { Pagination },
   filters: {
     statusColorFilter(status) {
       const statusMap = {
@@ -94,13 +104,48 @@ export default {
   data() {
     return {
       list: null,
-      total: null,
+      total: 0,
       listQuery: {
         pageNum: 1,
         pageSize: 5,
-        type: null
+        type: null,
+        serialNumber: null,
+        title: null,
+        status: null
       },
-      loading: false
+      loading: false,
+      typeOptions: [
+        {
+          value: 0,
+          label: '报修单'
+        },
+        {
+          value: 1,
+          label: '求购单'
+        }
+      ],
+      statusOptions: [
+        {
+          value: 0,
+          label: '待审核'
+        },
+        {
+          value: 1,
+          label: '已驳回'
+        },
+        {
+          value: 2,
+          label: '待修理'
+        },
+        {
+          value: 3,
+          label: '待购买'
+        },
+        {
+          value: 4,
+          label: '已完结'
+        }
+      ]
     }
   },
   watch: {
@@ -121,6 +166,7 @@ export default {
       this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: row.id }})
     },
     handleFilter() {
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleCreate() {

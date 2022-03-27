@@ -7,10 +7,6 @@ Vue.use(Router)
 import Layout from '@/layout'
 
 /* Router Modules */
-import componentsRouter from './modules/components'
-import chartsRouter from './modules/charts'
-import tableRouter from './modules/table'
-import nestedRouter from './modules/nested'
 
 /**
  * Note: sub-menu only appear when route children.length >= 1
@@ -80,18 +76,6 @@ export const constantRoutes = [
         component: () => import('@/views/dashboard/index'),
         name: 'Dashboard',
         meta: { title: 'dashboard', icon: 'dashboard', affix: true }
-      }
-    ]
-  },
-  {
-    path: '/documentation',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/documentation/index'),
-        name: 'Documentation',
-        meta: { title: 'documentation', icon: 'documentation', affix: true }
       }
     ]
   },
@@ -171,6 +155,42 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/model-table',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/manage-model/index'),
+        name: 'manage-model-table',
+        meta: { title: '型号管理' }
+      }
+    ]
+  },
+  {
+    path: '/community-table',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/manage-community/index'),
+        name: 'manage-community-table',
+        meta: { title: '社区管理', roles: ['admin'] }
+      }
+    ]
+  },
+  {
+    path: '/fitnessEquipment-table',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/manage-fitness-equipment/index'),
+        name: 'manage-fitnessEquipment-table',
+        meta: { title: '器材管理', roles: ['admin'] }
+      }
+    ]
+  },
+  {
     path: '/workOrder',
     component: Layout,
     children: [
@@ -203,7 +223,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/mange-user/index'),
         name: 'mangeUser',
-        meta: { title: '用户管理', icon: 'user' }
+        meta: { title: '用户管理', icon: 'user', roles: ['admin'] }
       }
     ]
   },
@@ -221,10 +241,6 @@ export const asyncRoutes = [
   },
 
   /** when your routing map is too long, you can split it into small modules **/
-  componentsRouter,
-  chartsRouter,
-  nestedRouter,
-  tableRouter,
 
   // 404 page must be placed at the end !!!
   { path: '*', redirect: '/404', hidden: true }

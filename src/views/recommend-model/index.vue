@@ -32,6 +32,9 @@ export default {
       communityId: null
     }
   },
+  create() {
+    this.getList()
+  },
   method: {
     getList() {
       this.listLoading = true

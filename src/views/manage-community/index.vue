@@ -3,7 +3,6 @@
   <div class="app-container">
     <div class="filter-container">
       <el-input v-model="listQuery.name" placeholder="社区名字" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" />
-      <!-- <el-input v-model="listQuery.modelNumber" placeholder="器材型号" style="width: 200px;" class="filter-item" @keyup.enter.native="handleFilter" /> -->
       <el-button v-waves class="filter-item" type="primary" icon="el-icon-search" @click="handleFilter">
         {{ $t('table.search') }}
       </el-button>
@@ -49,6 +48,11 @@
           <span>{{ row.detailedAddress }}</span>
         </template>
       </el-table-column>
+      <el-table-column label="负责人" align="center" min-width="120px">
+        <template slot-scope="{row}">
+          <span>{{ row.userName }}</span>
+        </template>
+      </el-table-column>
       <el-table-column :label="$t('table.actions')" align="center" width="230" class-name="small-padding fixed-width">
         <template slot-scope="{row,$index}">
           <el-button type="primary" size="mini" @click="handleUpdate(row)">
@@ -61,7 +65,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
@@ -73,6 +77,11 @@
         </el-form-item>
         <el-form-item label="详细地址" prop="detailedAddress">
           <el-input v-model="temp.detailedAddress" />
+        </el-form-item>
+        <el-form-item label="负责人" prop="user">
+          <el-select v-model="temp.userId" :filterable="true" :remote="true" placeholder="请选择负责人" :remote-method="getUserOptions" :loading="loadingUser">
+            <el-option v-for="item in userOptions" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
@@ -103,6 +112,7 @@ import waves from '@/directive/waves' // waves directive
 import { parseTime } from '@/utils'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
 import option from '@/utils/options'
+import { getProperty } from '@/api/user'
 
 export default {
   name: 'ComplexTable',
@@ -142,7 +152,9 @@ export default {
         city: undefined,
         district: undefined,
         detailedAddress: undefined,
-        address: []
+        address: [],
+        userId: null,
+        userName: null
       },
       dialogFormVisible: false,
       dialogStatus: '',
@@ -158,13 +170,27 @@ export default {
         detailedAddress: [{ required: true, message: '请填写详细地址', trigger: 'change' }]
       },
       downloadLoading: false,
-      options: option.option
+      options: option.option,
+      userOptions: [],
+      loadingUser: false
     }
   },
   created() {
     this.getList()
   },
   methods: {
+    getUserOptions(keyword) {
+      this.loadingCommunity = true
+      getProperty(keyword).then(response => {
+        this.userOptions = response.data
+        console.log(response.data)
+        this.loadingCommunity = false
+      }).catch(error => {
+        this.userOptions = []
+        this.loadingCommunity
+        console.log(error)
+      })
+    },
     getList() {
       this.listLoading = true
       getCommunityList(this.listQuery).then(response => {
@@ -178,7 +204,7 @@ export default {
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleModifyStatus(row, status) {
@@ -242,6 +268,7 @@ export default {
     handleUpdate(row) {
       this.temp = Object.assign({}, row) // copy obj
       this.temp.address = [this.temp.province, this.temp.city, this.temp.district]
+      this.getUserOptions('')
       console.log(this.temp.address)
       this.temp.timestamp = new Date(this.temp.timestamp)
       this.dialogStatus = 'update'
@@ -259,9 +286,8 @@ export default {
           const tempData = Object.assign({}, this.temp)
           tempData.timestamp = +new Date(tempData.timestamp) // change Thu Nov 30 2017 16:41:05 GMT+0800 (CST) to 1512031311464
           updateCommunity(tempData).then(() => {
-            const index = this.list.findIndex(v => v.id === this.temp.id)
-            this.list.splice(index, 1, this.temp)
             this.dialogFormVisible = false
+            this.getList()
             this.$notify({
               title: '成功',
               message: '更新成功',

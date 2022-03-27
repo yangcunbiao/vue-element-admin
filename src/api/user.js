@@ -69,3 +69,11 @@ export function checkAccount(account) {
     params: { account: account }
   })
 }
+
+export function getProperty(username) {
+  return request({
+    url: '/user/getProperty',
+    method: 'get',
+    params: { userName: username }
+  })
+}

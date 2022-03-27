@@ -10,9 +10,6 @@
       <el-button class="filter-item" style="margin-left: 10px;" type="primary" icon="el-icon-edit" @click="handleCreate">
         {{ $t('table.add') }}
       </el-button>
-      <!-- <el-button v-waves :loading="downloadLoading" class="filter-item" type="primary" icon="el-icon-download" @click="handleDownload">
-        {{ $t('table.export') }}
-      </el-button> -->
     </div>
 
     <el-table
@@ -74,7 +71,7 @@
       </el-table-column>
     </el-table>
 
-    <pagination v-show="total>0" :total="total" :page.sync="listQuery.page" :limit.sync="listQuery.limit" @pagination="getList" />
+    <pagination v-show="total>0" :total="total" :page.sync="listQuery.pageNum" :limit.sync="listQuery.pageSize" @pagination="getList" />
 
     <el-dialog :title="textMap[dialogStatus]" :visible.sync="dialogFormVisible" width="80%">
       <el-form ref="dataForm" :rules="rules" :model="temp" label-position="left" label-width="80px" style="width: 400px; margin-left:50px;">
@@ -214,7 +211,8 @@ export default {
       rules: {
         name: [{ required: true, message: '请填写名字', trigger: 'change' }],
         modelNumber: [{ required: true, message: '请填写型号', trigger: 'change' }],
-        modelName: [{ required: true, message: '请填写器材名称', trigger: 'change' }]
+        modelName: [{ required: true, message: '请填写器材名称', trigger: 'change' }],
+        communityName: [{ required: true, message: '请选择社区', trigger: 'change' }]
       },
       downloadLoading: false,
       modelOptions: [],
@@ -254,6 +252,7 @@ export default {
     handleChangeCommunity(value) {
       console.log(value)
       this.temp.communityId = value.id
+      this.temp.communityName = value.name
     },
     getCommunityOptions(keyword) {
       if (keyword !== '') {
@@ -282,7 +281,7 @@ export default {
       })
     },
     handleFilter() {
-      this.listQuery.page = 1
+      this.listQuery.pageNum = 1
       this.getList()
     },
     handleModifyStatus(row, status) {
