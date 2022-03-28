@@ -33,7 +33,7 @@ export function deleteModel(data) {
 
 export function getRecommendModel(data) {
   return request({
-    url: '/getRecommendModel/delete/' + data,
+    url: '/model/getRecommendModel/' + data,
     method: 'get'
   })
 }
