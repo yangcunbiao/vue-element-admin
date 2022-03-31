@@ -1,14 +1,14 @@
 <template>
   <div class="tab-container">
     <el-tabs v-model="activeName" style="margin-top:15px;" type="border-card" @tab-click="handleClick">
-      <el-tab-pane key="all" label="全部工单" name="all">
+      <el-tab-pane key="all" v-permission="['admin']" label="全部工单" name="all">
         <tab-pane v-if="activeName=='all'" ref="all" type="all" />
       </el-tab-pane>
       <el-tab-pane key="waitHandle" label="待处理工单" name="waitHandle">
         <tab-pane v-if="activeName=='waitHandle'" ref="waitHandle" type="waitHandle" />
       </el-tab-pane>
       <el-tab-pane key="myWorkOrder" label="我的工单" name="myWorkOrder">
-        <tab-pane v-if="activeName=='myWorkOrder'" ref="myWorkOrder" type="myWorkOrder" />
+        <tab-pane v-if="activeName=='myWorkOrder'" ref="myWorkOrder" v-permission="['pro']" type="myWorkOrder" />
       </el-tab-pane>
     </el-tabs>
   </div>

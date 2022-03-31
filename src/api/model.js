@@ -33,7 +33,8 @@ export function deleteModel(data) {
 
 export function getRecommendModel(data) {
   return request({
-    url: '/model/getRecommendModel/' + data,
-    method: 'get'
+    url: '/model/getRecommendModel/' + data.id,
+    method: 'get',
+    params: { pageNum: data.pageNum, pageSize: data.pageSize }
   })
 }
