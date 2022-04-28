@@ -24,7 +24,7 @@
               width="400"
               trigger="click"
             >
-              <span>联系电话：{{ form.applicant.mobilePhoneNumber }}</span>
+              <span>联系电话：{{ form.applicantInfo.mobilePhoneNumber }}</span>
               <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
             </el-popover>
           </el-form-item>
@@ -71,8 +71,8 @@
           </el-form-item>
         </el-col>
         <el-col :span="11" :offset="2">
-          <el-form-item v-if="(form.type === 0&&detailType==='create')||(form.type === 0&&(form.status===0||form.status===2||form.status===4))" label="维修员">
-            <el-select v-model="form.repairman" :disabled="detailType === 'watch'" :filterable="true" :remote="true" placeholder="请指派维修员" :remote-method="getRepairmanOptions" :loading="loadingRepairman" value-key="name" @change="handleChangeRepairman">
+          <el-form-item v-if="form.type === 0&&(form.status===0||form.status===2||form.status===4)" label="维修员">
+            <el-select v-model="form.repairman" :disabled="!(form.type === 0&&(form.status===0))" :filterable="true" :remote="true" placeholder="请指派维修员" :remote-method="getRepairmanOptions" :loading="loadingRepairman" value-key="name" @change="handleChangeRepairman">
               <el-option v-for="item in repairmanOptions" :key="item.id" :label="item.name" :value="item" />
             </el-select>
             <el-popover
@@ -131,10 +131,17 @@
         </el-col>
       </el-row>
       <el-row>
-        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==2||form.status==3)" :span="2" :offset="11">
+        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==2)" :span="2" :offset="10">
+          <el-form-item>
+            <el-button type="primary" @click="handleDamage">
+              报废
+            </el-button>
+          </el-form-item>
+        </el-col>
+        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==2||form.status==3)" :span="2">
           <el-form-item>
             <el-button type="primary" @click="handleFinish">
-              完成工单
+              完成
             </el-button>
           </el-form-item>
         </el-col>
@@ -148,7 +155,7 @@ import { getCommunityList } from '@/api/community'
 import { getModelList } from '@/api/model'
 import { getFitnessEquipmentList } from '@/api/fitness-equipment'
 import Upload from '@/views/qiniu/upload.vue'
-import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder } from '@/api/work-order'
+import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage } from '@/api/work-order'
 import permission from '@/directive/permission/index.js'
 import { getRepairman } from '@/api/user'
 
@@ -177,7 +184,17 @@ export default {
         status: null,
         repairman: null
       },
-      rules: {},
+      rules: {
+
+      },
+      buyRules: {
+
+      },
+      repairRules: {
+        title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
+        fitnessEquipmentSerialNumber: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }]
+      },
       communityOptions: [],
       loadingCommunity: false,
       modelOptions: [],
@@ -208,6 +225,18 @@ export default {
     }
   },
   methods: {
+    handleDamage() {
+      finishWorkOrderAndDamage(this.form.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.edit(this.form.id)
+        this.$forceUpdate()
+      })
+    },
     handleChangeRepairman(value) {
       this.form.repairman = value
       this.form.repairmanId = value.id
@@ -238,7 +267,7 @@ export default {
       })
     },
     handleCheck(result) {
-      checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.form.repairmanId }).then(response => {
+      checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.form.repairmanId, auditorId: this.$store.getters.id }).then(response => {
         this.$notify({
           title: '成功',
           message: '审核成功',

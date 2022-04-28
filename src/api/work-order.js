@@ -47,3 +47,9 @@ export function finishWorkOrder(data) {
     method: 'get'
   })
 }
+export function finishWorkOrderAndDamage(data) {
+  return request({
+    url: '/workOrder/finishAndDamage/' + data,
+    method: 'get'
+  })
+}

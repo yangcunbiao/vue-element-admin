@@ -101,60 +101,6 @@ export const constantRoutes = [
  */
 export const asyncRoutes = [
   {
-    path: '/permission',
-    component: Layout,
-    redirect: '/permission/page',
-    alwaysShow: true, // will always show the root menu
-    name: 'Permission',
-    meta: {
-      title: 'permission',
-      icon: 'lock',
-      roles: ['admin', 'editor'] // you can set roles in root nav
-    },
-    children: [
-      {
-        path: 'page',
-        component: () => import('@/views/permission/page'),
-        name: 'PagePermission',
-        meta: {
-          title: 'pagePermission',
-          roles: ['admin'] // or you can only set roles in sub nav
-        }
-      },
-      {
-        path: 'directive',
-        component: () => import('@/views/permission/directive'),
-        name: 'DirectivePermission',
-        meta: {
-          title: 'directivePermission'
-          // if do not set roles, means: this page does not require permission
-        }
-      },
-      {
-        path: 'role',
-        component: () => import('@/views/permission/role'),
-        name: 'RolePermission',
-        meta: {
-          title: 'rolePermission',
-          roles: ['admin']
-        }
-      }
-    ]
-  },
-
-  {
-    path: '/icon',
-    component: Layout,
-    children: [
-      {
-        path: 'index',
-        component: () => import('@/views/icons/index'),
-        name: 'Icons',
-        meta: { title: 'icons', icon: 'icon', noCache: true }
-      }
-    ]
-  },
-  {
     path: '/model-table',
     component: Layout,
     children: [
@@ -162,7 +108,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/manage-model/index'),
         name: 'manage-model-table',
-        meta: { title: '型号管理' }
+        meta: { title: '型号管理', icon: 'model', roles: ['admin'] }
       }
     ]
   },
@@ -174,7 +120,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/manage-community/index'),
         name: 'manage-community-table',
-        meta: { title: '社区管理', roles: ['admin'] }
+        meta: { title: '社区管理', roles: ['admin'], icon: 'community' }
       }
     ]
   },
@@ -186,7 +132,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/manage-fitness-equipment/index'),
         name: 'manage-fitnessEquipment-table',
-        meta: { title: '器材管理', roles: ['admin'] }
+        meta: { title: '器材管理', roles: ['admin'], icon: 'fitness-equipment' }
       }
     ]
   },
@@ -235,7 +181,7 @@ export const asyncRoutes = [
         path: 'index',
         component: () => import('@/views/recommend-model/index'),
         name: 'recommendModel',
-        meta: { title: '器材推荐', icon: 'recommend' }
+        meta: { title: '器材推荐', icon: 'recommend', roles: ['property'] }
       }
     ]
   },

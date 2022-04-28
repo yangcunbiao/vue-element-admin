@@ -198,9 +198,7 @@ export default {
         this.total = response.data.total
 
         // Just to simulate the time of the request
-        setTimeout(() => {
-          this.listLoading = false
-        }, 1.5 * 1000)
+        this.listLoading = false
       })
     },
     handleFilter() {
@@ -254,6 +252,7 @@ export default {
           this.temp.district = this.temp.address[2]
           addCommunity(this.temp).then(() => {
             this.list.unshift(this.temp)
+            this.getList()
             this.dialogFormVisible = false
             this.$notify({
               title: '成功',
