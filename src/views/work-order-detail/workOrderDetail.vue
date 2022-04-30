@@ -24,7 +24,7 @@
               width="400"
               trigger="click"
             >
-              <span>联系电话：{{ form.applicantInfo.mobilePhoneNumber }}</span>
+              <!-- <span>联系电话：{{ form.applicantInfo.mobilePhoneNumber }}</span> -->
               <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
             </el-popover>
           </el-form-item>
@@ -71,7 +71,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="11" :offset="2">
-          <el-form-item v-if="form.type === 0&&(form.status===0||form.status===2||form.status===4)" label="维修员">
+          <el-form-item v-if="form.type === 0&&((form.status===0&&checkPermission(['admin']))||form.status===2||form.status===4)" label="维修员" prop="repairman">
             <el-select v-model="form.repairman" :disabled="!(form.type === 0&&(form.status===0))" :filterable="true" :remote="true" placeholder="请指派维修员" :remote-method="getRepairmanOptions" :loading="loadingRepairman" value-key="name" @change="handleChangeRepairman">
               <el-option v-for="item in repairmanOptions" :key="item.id" :label="item.name" :value="item" />
             </el-select>
@@ -81,7 +81,7 @@
               width="400"
               trigger="click"
             >
-              <span>联系电话：{{ form.repairman.mobilePhoneNumber }}</span>
+              <!-- <span>联系电话：{{ form.repairman.mobilePhoneNumber }}</span> -->
               <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
             </el-popover>
           </el-form-item>
@@ -158,6 +158,7 @@ import Upload from '@/views/qiniu/upload.vue'
 import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage } from '@/api/work-order'
 import permission from '@/directive/permission/index.js'
 import { getRepairman } from '@/api/user'
+import checkPermission from '@/utils/permission'
 
 export default {
   components: { Upload },
@@ -184,8 +185,23 @@ export default {
         status: null,
         repairman: null
       },
+      pass: false,
       rules: {
-
+        title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
+        fitnessEquipmentSerialNumber: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
+        applicant: [{ required: true, message: '', trigger: 'blur' }],
+        community: [{ required: true, message: '请刷新或联系管理员绑定社区', trigger: 'blur' }],
+        model: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        modelName: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        content: [{ required: true, message: '请填写内容', trigger: 'blur' }],
+        repairman: [{ required: false, validator: (rule, value, callback) => {
+          console.log(value)
+          if (this.pass && value == null) {
+            return callback(new Error('请选择维修员'))
+          }
+          return callback()
+        } }]
       },
       buyRules: {
 
@@ -193,7 +209,10 @@ export default {
       repairRules: {
         title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
         fitnessEquipmentSerialNumber: [{ required: true, message: '请选择器材', trigger: 'blur' }],
-        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }]
+        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
+        applicant: [{ required: true, message: '', trigger: 'blur' }],
+        community: [{ required: true, message: '请联系管理员绑定社区', trigger: 'blur' }],
+        model: [{ required: true, message: '请选择器材', trigger: 'blur' }]
       },
       communityOptions: [],
       loadingCommunity: false,
@@ -225,6 +244,7 @@ export default {
     }
   },
   methods: {
+    checkPermission,
     handleDamage() {
       finishWorkOrderAndDamage(this.form.id).then(() => {
         this.$notify({
@@ -267,16 +287,21 @@ export default {
       })
     },
     handleCheck(result) {
-      checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.form.repairmanId, auditorId: this.$store.getters.id }).then(response => {
-        this.$notify({
-          title: '成功',
-          message: '审核成功',
-          type: 'success',
-          duration: 2000
-        })
-        // this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
-        this.edit(this.form.id)
-        this.$forceUpdate()
+      this.pass = result
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          checkWorkOrder({ id: this.form.id, pass: result, repairmanId: this.form.repairmanId, auditorId: this.$store.getters.id }).then(response => {
+            this.$notify({
+              title: '成功',
+              message: '审核成功',
+              type: 'success',
+              duration: 2000
+            })
+            // this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: this.form.id }})
+            this.edit(this.form.id)
+            this.$forceUpdate()
+          })
+        }
       })
     },
     edit(id) {
