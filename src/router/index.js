@@ -125,6 +125,17 @@ export const asyncRoutes = [
     ]
   },
   {
+    path: '/show-model',
+    component: Layout,
+    children: [
+      {
+        path: 'index',
+        component: () => import('@/views/show-model/index'),
+        meta: { title: '型号展示', roles: ['admin', 'property', 'repairMan'], icon: 'model' }
+      }
+    ]
+  },
+  {
     path: '/fitnessEquipment-table',
     component: Layout,
     children: [

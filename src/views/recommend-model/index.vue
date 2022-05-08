@@ -17,8 +17,8 @@
         换一批
       </el-button>
     </div>
-    <el-row v-for="item in list" :key="item">
-      <el-col v-for="(o, index) in item" :key="o" :span="6" :offset="index > 0 ? 3 : 0">
+    <el-row v-for="(item,index1) in list" :key="index1">
+      <el-col v-for="(o, index) in item" :key="index" :span="6" :offset="index > 0 ? 3 : 0">
         <el-card :body-style="{ padding: '0px' }">
           <img :src="o.picture" class="image">
           <div style="padding: 14px;">
@@ -94,6 +94,7 @@ export default {
         }
         this.listLoading = false
       })
+      this.listQuery.pageNum++
     },
     handleFilter() {
       this.getList()

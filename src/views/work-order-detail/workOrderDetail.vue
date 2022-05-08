@@ -9,7 +9,7 @@
         </el-col>
         <el-col :span="11" :offset="2">
           <el-form-item label="类型" prop="type">
-            <el-select v-model="form.type" placeholder="请选择类型" :disabled="detailType === 'watch'">
+            <el-select v-model="form.type" placeholder="请选择类型" :disabled="detailType === 'watch'" @change="handleChangeType">
               <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value" />
             </el-select>
           </el-form-item>
@@ -20,11 +20,12 @@
           <el-form-item label="申请人" prop="applicant">
             <el-input v-model="form.applicant" :disabled="true" style="width:200px;" />
             <el-popover
+              v-if="detailType != 'create'"
               placement="right"
               width="400"
               trigger="click"
             >
-              <!-- <span>联系电话：{{ form.applicantInfo.mobilePhoneNumber }}</span> -->
+              <span>联系电话：{{ form.applicantInfo.mobilePhoneNumber }}</span>
               <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
             </el-popover>
           </el-form-item>
@@ -81,7 +82,7 @@
               width="400"
               trigger="click"
             >
-              <!-- <span>联系电话：{{ form.repairman.mobilePhoneNumber }}</span> -->
+              <span>联系电话：{{ form.repairman.mobilePhoneNumber }}</span>
               <el-button slot="reference" icon="el-icon-view" circle size="mini" style="border:none;" />
             </el-popover>
           </el-form-item>
@@ -188,13 +189,33 @@ export default {
       pass: false,
       rules: {
         title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
+        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
+        applicant: [{ required: true, message: '', trigger: 'blur' }],
+        community: [{ required: true, message: '请刷新或联系管理员绑定社区', trigger: 'blur' }],
+        model: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        modelName: [{ required: true, message: '请选择器材', trigger: 'blur' }],
+        content: [{ required: true, message: '请填写内容', trigger: 'blur' }]
+      },
+      buyRules: {
+        title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
+        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
+        applicant: [{ required: true, message: '', trigger: 'blur' }],
+        community: [{ required: true, message: '请刷新或联系管理员绑定社区', trigger: 'blur' }],
+        model: [{ required: true, message: '请选择器材型号', trigger: 'blur' }],
+        modelName: [{ required: true, message: '请选择器材型号', trigger: 'blur' }],
+        content: [{ required: true, message: '请填写内容', trigger: 'blur' }]
+      },
+      repairRules: {
+        title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
         fitnessEquipmentSerialNumber: [{ required: true, message: '请选择器材', trigger: 'blur' }],
         type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
         applicant: [{ required: true, message: '', trigger: 'blur' }],
         community: [{ required: true, message: '请刷新或联系管理员绑定社区', trigger: 'blur' }],
         model: [{ required: true, message: '请选择器材', trigger: 'blur' }],
         modelName: [{ required: true, message: '请选择器材', trigger: 'blur' }],
-        content: [{ required: true, message: '请填写内容', trigger: 'blur' }],
+        content: [{ required: true, message: '请填写内容', trigger: 'blur' }]
+      },
+      checkRules: {
         repairman: [{ required: false, validator: (rule, value, callback) => {
           console.log(value)
           if (this.pass && value == null) {
@@ -202,17 +223,6 @@ export default {
           }
           return callback()
         } }]
-      },
-      buyRules: {
-
-      },
-      repairRules: {
-        title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
-        fitnessEquipmentSerialNumber: [{ required: true, message: '请选择器材', trigger: 'blur' }],
-        type: [{ required: true, message: '请选择工单类型', trigger: 'blur' }],
-        applicant: [{ required: true, message: '', trigger: 'blur' }],
-        community: [{ required: true, message: '请联系管理员绑定社区', trigger: 'blur' }],
-        model: [{ required: true, message: '请选择器材', trigger: 'blur' }]
       },
       communityOptions: [],
       loadingCommunity: false,
@@ -244,6 +254,13 @@ export default {
     }
   },
   methods: {
+    handleChangeType(value) {
+      if (value === 0) {
+        this.rules = this.repairRules
+      } else {
+        this.rules = this.buyRules
+      }
+    },
     checkPermission,
     handleDamage() {
       finishWorkOrderAndDamage(this.form.id).then(() => {
@@ -326,6 +343,11 @@ export default {
           this.form.fitnessEquipmentSerialNumber = this.form.fitnessEquipment.serialNumber
           this.fitnessEquipmentOptions = []
           this.fitnessEquipmentOptions.push(this.form.fitnessEquipment)
+        }
+        if (this.form.status === 0 && this.form.type === 0) {
+          this.rules = this.checkRules
+        } else {
+          this.rules = {}
         }
         console.log(this.form)
         const pictureList = this.form.pictureList
