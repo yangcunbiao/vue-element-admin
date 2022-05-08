@@ -260,6 +260,9 @@ export default {
       } else {
         this.rules = this.buyRules
       }
+      this.$nextTick(() => {
+        this.$refs['form'].clearValidate()
+      })
     },
     checkPermission,
     handleDamage() {
