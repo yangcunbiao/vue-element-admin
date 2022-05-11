@@ -47,9 +47,32 @@ export function finishWorkOrder(data) {
     method: 'get'
   })
 }
+
 export function finishWorkOrderAndDamage(data) {
   return request({
     url: '/workOrder/finishAndDamage/' + data,
+    method: 'get'
+  })
+}
+
+export function quotation(data) {
+  return request({
+    url: '/workOrder/quotation',
+    method: 'post',
+    data
+  })
+}
+
+export function financeCheck(data) {
+  return request({
+    url: '/workOrder/financeCheck/' + data,
+    method: 'get'
+  })
+}
+
+export function repaired(data) {
+  return request({
+    url: '/workOrder/repaired/' + data,
     method: 'get'
   })
 }

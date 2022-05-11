@@ -1,13 +1,13 @@
 <template>
   <div class="app-container">
     <el-form ref="form" :rules="rules" :model="form" label-position="left" label-width="90px" style="width: 100%;" min-size="1000px" border fit>
-      <el-row>
+      <el-row type="flex" justify="space-between">
         <el-col :span="11">
           <el-form-item label="标题" prop="title">
             <el-input v-model="form.title" :disabled="detailType === 'watch'" />
           </el-form-item>
         </el-col>
-        <el-col :span="11" :offset="2">
+        <el-col :span="11">
           <el-form-item label="类型" prop="type">
             <el-select v-model="form.type" placeholder="请选择类型" :disabled="detailType === 'watch'" @change="handleChangeType">
               <el-option v-for="item in typeOptions" :key="item.value" :label="item.label" :value="item.value" />
@@ -15,7 +15,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row type="flex" justify="space-between">
         <el-col :span="11">
           <el-form-item label="申请人" prop="applicant">
             <el-input v-model="form.applicant" :disabled="true" style="width:200px;" />
@@ -30,7 +30,7 @@
             </el-popover>
           </el-form-item>
         </el-col>
-        <el-col :span="11" :offset="2">
+        <el-col :span="11">
           <el-form-item label="社区" prop="community">
             <el-select v-model="form.community" :filterable="true" :remote="true" placeholder="请选择社区" :disabled="true" :remote-method="getCommunityOptions" :loading="loadingCommunity" value-key="name" @change="handleChangeCommunity">
               <el-option v-for="item in communityOptions" :key="item.id" :label="item.name" :value="item" style="width: 400px">
@@ -49,7 +49,7 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row type="flex" justify="space-between">
         <el-col :span="11">
           <el-form-item label="器材型号" prop="model">
             <el-select v-model="form.model" :disabled="form.type === 0 || detailType === 'watch'" :filterable="true" :remote="true" placeholder="请输入器材名称或者器材型号" :remote-method="getModelOptions" :loading="loadingModel" value-key="modelNumber" @change="handleChangeModel">
@@ -57,13 +57,13 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="11" :offset="2">
+        <el-col :span="11">
           <el-form-item label="器材名称" prop="modelName">
             <el-input v-model="form.modelName" :disabled="true" placeholder="选择型号后自动填写" />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
+      <el-row type="flex" justify="space-between">
         <el-col :span="11">
           <el-form-item v-if="form.type === 0" label="器材编号" prop="fitnessEquipmentSerialNumber">
             <el-select v-model="form.fitnessEquipmentSerialNumber" :disabled="detailType === 'watch'" :filterable="true" :remote="true" placeholder="请输入器材编号" :remote-method="getFitnessEquipmentOptions" :loading="loadingFitnessEquipment" value-key="serialNumber" @change="handleChangeFitnessEquipment">
@@ -71,7 +71,7 @@
             </el-select>
           </el-form-item>
         </el-col>
-        <el-col :span="11" :offset="2">
+        <el-col :span="11">
           <el-form-item v-if="form.type === 0&&((form.status===0&&checkPermission(['admin']))||form.status===2||form.status===4)" label="维修员" prop="repairman">
             <el-select v-model="form.repairman" :disabled="!(form.type === 0&&(form.status===0))" :filterable="true" :remote="true" placeholder="请指派维修员" :remote-method="getRepairmanOptions" :loading="loadingRepairman" value-key="name" @change="handleChangeRepairman">
               <el-option v-for="item in repairmanOptions" :key="item.id" :label="item.name" :value="item" />
@@ -88,6 +88,14 @@
           </el-form-item>
         </el-col>
       </el-row>
+      <el-row type="flex" justify="space-between">
+        <el-col v-if="detailType === 'watch'&&(form.status === 2 || form.status === 4 || form.status === 5)" :span="11">
+          <el-form-item label="维修价格" prop="modelName">
+            <el-input v-if="!showFormatPrice" ref="money" v-model="form.money" :disabled="false" placeholder="请填写维修价格" @blur="blurInput" />
+            <el-input v-else ref="showMoney" v-model="money" :disabled="false" placeholder="请填写维修价格" @focus="focusInput" />
+          </el-form-item>
+        </el-col>
+      </el-row>
       <el-row style="margin-top:50px;">
         <el-form-item label="内容" prop="content">
           <el-input
@@ -101,10 +109,35 @@
           />
         </el-form-item>
       </el-row>
-      <el-row>
-        <el-form-item v-if="form.type === 0" label="图片" prop="content">
-          <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 200px;" @change="handleUpload" />
-        </el-form-item>
+      <el-row type="flex" justify="space-between">
+        <el-col :span="11">
+          <el-form-item v-if="form.type === 0" label="图片" prop="content">
+            <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 200px;" @change="handleUpload" />
+          </el-form-item>
+        </el-col>
+        <el-col v-if="detailType === 'watch'&&(form.status === 2 || form.status === 4 || form.status === 5)" :span="11">
+          <el-form-item v-if="form.type === 0" label="收款码" prop="content">
+            <upload :list="receiptCodeList" :limit="1" type="image" :disabled="form.status===2&&form.repairStatus===0&&checkPermission['repairMan']" style="width: 200px;" @change="handleUpload" />
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row type="flex" justify="center" :gutter="20">
+        <el-col v-if="form.status===2&&form.repairStatus===0&&checkPermission['repairMan']" :span="2">
+          <el-form-item>
+            <el-button type="primary" @click="handleQuotation">
+              提交报价
+            </el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row type="flex" justify="center" :gutter="20">
+        <el-col v-if="form.status===2&&form.repairStatus===2&&checkPermission['repairMan']" :span="2">
+          <el-form-item>
+            <el-button type="primary" @click="handleRepaired">
+              完成修理
+            </el-button>
+          </el-form-item>
+        </el-col>
       </el-row>
       <el-row>
         <el-col v-if="detailType === 'create'" :span="2" :offset="11">
@@ -131,15 +164,16 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row>
-        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==2)" :span="2" :offset="10">
-          <el-form-item>
+      <el-row />
+      <el-row type="flex" justify="center" :gutter="20">
+        <el-col :span="2">
+          <el-form-item v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==5)">
             <el-button type="primary" @click="handleDamage">
               报废
             </el-button>
           </el-form-item>
         </el-col>
-        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==2||form.status==3)" :span="2">
+        <el-col v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==5||form.status==3)" :span="2">
           <el-form-item>
             <el-button type="primary" @click="handleFinish">
               完成
@@ -156,7 +190,7 @@ import { getCommunityList } from '@/api/community'
 import { getModelList } from '@/api/model'
 import { getFitnessEquipmentList } from '@/api/fitness-equipment'
 import Upload from '@/views/qiniu/upload.vue'
-import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage } from '@/api/work-order'
+import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage, quotation, financeCheck, repaired } from '@/api/work-order'
 import permission from '@/directive/permission/index.js'
 import { getRepairman } from '@/api/user'
 import checkPermission from '@/utils/permission'
@@ -181,11 +215,15 @@ export default {
         modelName: null,
         modelNumber: null,
         pictureList: [],
+        receiptCode: null,
         applicant: null,
         applicantInfo: null,
         status: null,
-        repairman: null
+        repairman: null,
+        money: '',
+        repairStatus: null
       },
+      receiptCodeList: [],
       pass: false,
       rules: {
         title: [{ required: true, message: '请填写标题', trigger: 'blur' }],
@@ -224,6 +262,13 @@ export default {
           return callback()
         } }]
       },
+      quotationRules: {
+        money: [{
+          pattern: /^1000000000$|^1000000000.0$|^1000000000.00$|^[+]{0,1}(\d{0,9})$|^[+]{0,1}(\d{0,9}\.\d{1,2})$/,
+          message: ' 请输入 0-10亿 的正数，可保留两位小数',
+          trigger: 'blur'
+        }]
+      },
       communityOptions: [],
       loadingCommunity: false,
       modelOptions: [],
@@ -243,7 +288,9 @@ export default {
       detailType: null,
       currentUserId: this.$store.getters.id,
       repairmanOptions: [],
-      loadingRepairman: false
+      loadingRepairman: false,
+      showFormatPrice: true,
+      money: ''
     }
   },
   mounted() {
@@ -254,6 +301,80 @@ export default {
     }
   },
   methods: {
+    handleRepaired() {
+      repaired(this.form.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.edit(this.form.id)
+      })
+    },
+    handleFinanceCheck() {
+      financeCheck(this.form.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '审核成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.edit(this.form.id)
+      })
+    },
+    focusInput() {
+      this.showFormatPrice = false
+    },
+    blurInput() {
+      if (this.form.money !== '' && this.form.money != null) {
+        // 去掉前面的0
+        const integer = Number(this.form.money.split('.')[0])
+        const decimal = this.form.money.split('.')[1]
+          ? `.${this.form.money.split('.')[1]}`
+          : ''
+        this.form.money = isNaN(`${integer}${decimal}`)
+          ? this.form.money
+          : `${integer}${decimal}`
+        this.showFormatPrice = this.quotationRules['money'][0].pattern.test(
+          this.form.money
+        )
+      }
+      this.money = this.form.money
+      console.log(this.money)
+      this.formatePrice()
+      console.log(this.money)
+      this.showFormatPrice = true
+    },
+    formatePrice() {
+      if (
+        this.money !== '' &&
+        this.money != null
+      ) {
+        // 去掉前面的0
+        console.log(1)
+        const integer = this.money.split('.')[0]
+        const decimal = this.money.split('.')[1]
+          ? `.${this.money.split('.')[1]}`
+          : ''
+        this.money = `${integer
+          .toString()
+          .replace(/(?=(?!^)(\d{3})+$)/g, ',')}${decimal}`
+      } else {
+        this.money = ''
+      }
+    },
+    handleQuotation() {
+      quotation(this.form).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.edit(this.form.id)
+      })
+    },
     handleChangeType(value) {
       if (value === 0) {
         this.rules = this.repairRules
@@ -360,6 +481,9 @@ export default {
             this.form.pictureList.push({ url: u, response: { data: u }})
           }
         }
+        if (this.form.receiptCode != null) {
+          this.receiptCodeList.push({ url: this.form.receiptCode, response: { data: this.form.receiptCode }})
+        }
       })
     },
     create() {
@@ -390,6 +514,10 @@ export default {
     handleUpload(data) {
       this.form.pictureList = data
       console.log(data)
+    },
+    handleUploadReceiptCode(data) {
+      this.receiptCodeList = data
+      this.form.receiptCode = this.receiptCodeList.map(item => (item.response.data))[0]
     },
     handleChangeFitnessEquipment(value) {
       console.log(value)
