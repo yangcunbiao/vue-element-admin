@@ -76,3 +76,9 @@ export function repaired(data) {
     method: 'get'
   })
 }
+export function paid(data) {
+  return request({
+    url: '/workOrder/paid/' + data,
+    method: 'get'
+  })
+}

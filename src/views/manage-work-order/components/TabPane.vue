@@ -42,7 +42,12 @@
       </el-table-column>
 
       <el-table-column class-name="status-col" label="状态" width="110">
-        <template slot-scope="{row}">
+        <template v-if="checkPermission(['finance'])" slot-scope="{row}">
+          <el-tag :type="row.status | statusColorFilter">
+            {{ row.repairStatus | statusFilter }}
+          </el-tag>
+        </template>
+        <template v-else slot-scope="{row}">
           <el-tag :type="row.status | statusColorFilter">
             {{ row.status | statusFilter }}
           </el-tag>
@@ -63,6 +68,7 @@
 <script>
 import { getWorkOrderList, getWaitHandleWorkOrderList, getMyWorkOrderList } from '@/api/work-order'
 import Pagination from '@/components/Pagination' // secondary package based on el-pagination
+import checkPermission from '@/utils/permission'
 
 export default {
   components: { Pagination },
@@ -78,13 +84,25 @@ export default {
       return statusMap[status]
     },
     statusFilter(status) {
-      const statusMap = {
+      var statusMap = {
         0: '待审核',
         1: '已驳回',
         2: '待修理',
         3: '待购买',
-        4: '已完结'
+        4: '已完结',
+        5: '已修理'
       }
+      if (checkPermission(['finance'])) {
+        statusMap = {
+          0: '待报价',
+          1: '待审核',
+          2: '已通过',
+          3: '待付款',
+          4: '已付款'
+        }
+      }
+      console.log(status)
+      console.log(statusMap[status])
       return statusMap[status]
     },
     typeFilter(type) {
@@ -107,7 +125,7 @@ export default {
       total: 0,
       listQuery: {
         pageNum: 1,
-        pageSize: 5,
+        pageSize: 10,
         type: null,
         serialNumber: null,
         title: null,
@@ -161,6 +179,7 @@ export default {
     this.getList()
   },
   methods: {
+    checkPermission,
     handleWatch(row) {
       console.log(row)
       this.$router.push({ name: 'workOrderDetail', path: '/workOrderDetail', query: { workOrderId: row.id }})
@@ -177,6 +196,7 @@ export default {
       if (this.type === 'waitHandle') {
         getWaitHandleWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
+          this.total = response.data.total
           this.loading = false
         }).catch(err => {
           console.error(err)
@@ -184,6 +204,7 @@ export default {
       } else if (this.type === 'all') {
         getWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
+          this.total = response.data.total
           this.loading = false
         }).catch(err => {
           console.error(err)
@@ -191,6 +212,7 @@ export default {
       } else {
         getMyWorkOrderList(this.listQuery).then(response => {
           this.list = response.data.records
+          this.total = response.data.total
           this.loading = false
         }).catch(err => {
           console.error(err)

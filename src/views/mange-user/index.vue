@@ -78,7 +78,7 @@
           <el-input v-model="temp.email" type="email" />
         </el-form-item>
         <el-form-item label="角色" prop="roles">
-          <el-select v-model="temp.roles" multiple placeholder="请选择角色">
+          <el-select v-model="temp.roles" placeholder="请选择角色">
             <el-option v-for="item in roleOptions" :key="item.value" :label="item.label" :value="item.value" />
           </el-select>
         </el-form-item>
@@ -186,7 +186,7 @@ export default {
           })
         }, trigger: 'blur' }],
         mobilePhoneNumber: [{ required: true, message: '请填写电话号码', trigger: 'change' }, { required: true, pattern: /^1[34578]\d{9}$/, message: '请填写正确的手机号码', trigger: 'blur' }],
-        roles: [{ required: true, message: '至少选择一个角色', trigger: 'change' }],
+        roles: [{ required: true, message: '请选择一个角色', trigger: 'change' }],
         password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
         confirmPassword: [{ required: true, validator: (rule, value, callback) => {
           console.log(this.temp.password)
@@ -246,8 +246,8 @@ export default {
       },
       roleOptions: [
         {
-          value: 'admin',
-          label: '管理员'
+          value: 'finance',
+          label: '财务'
         },
         {
           value: 'repairMan',

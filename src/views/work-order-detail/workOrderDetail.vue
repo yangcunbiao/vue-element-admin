@@ -89,10 +89,10 @@
         </el-col>
       </el-row>
       <el-row type="flex" justify="space-between">
-        <el-col v-if="detailType === 'watch'&&(form.status === 2 || form.status === 4 || form.status === 5)" :span="11">
-          <el-form-item label="维修价格" prop="modelName">
-            <el-input v-if="!showFormatPrice" ref="money" v-model="form.money" :disabled="false" placeholder="请填写维修价格" @blur="blurInput" />
-            <el-input v-else ref="showMoney" v-model="money" :disabled="false" placeholder="请填写维修价格" @focus="focusInput" />
+        <el-col v-if="detailType === 'watch'&&((form.status === 2&&form.repairStatus === 0&&checkPermission(['repairMan'])) || (form.status === 2&& form.repairStatus!=0) || form.status === 4 || form.status === 5)" :span="11">
+          <el-form-item label="维修价格" prop="money">
+            <el-input v-if="!showFormatPrice" ref="money" v-model="form.money" :disabled="!(form.status===2&&form.repairStatus===0&&checkPermission(['repairMan']))" placeholder="请填写维修价格" @blur="blurInput" />
+            <el-input v-else ref="showMoney" v-model="money" :disabled="!(form.status===2&&form.repairStatus===0&&checkPermission(['repairMan']))" placeholder="请填写维修价格" @focus="focusInput" />
           </el-form-item>
         </el-col>
       </el-row>
@@ -111,18 +111,18 @@
       </el-row>
       <el-row type="flex" justify="space-between">
         <el-col :span="11">
-          <el-form-item v-if="form.type === 0" label="图片" prop="content">
+          <el-form-item v-if="form.type === 0" label="图片" prop="picture">
             <upload :list="form.pictureList" :limit="5" type="image" :disabled="detailType === 'watch'" style="width: 200px;" @change="handleUpload" />
           </el-form-item>
         </el-col>
-        <el-col v-if="detailType === 'watch'&&(form.status === 2 || form.status === 4 || form.status === 5)" :span="11">
-          <el-form-item v-if="form.type === 0" label="收款码" prop="content">
-            <upload :list="receiptCodeList" :limit="1" type="image" :disabled="form.status===2&&form.repairStatus===0&&checkPermission['repairMan']" style="width: 200px;" @change="handleUpload" />
+        <el-col v-if="detailType === 'watch'&&((form.status === 2&&form.repairStatus===0&&checkPermission(['repairMan'])) || (form.status === 2 && form.repairStatus != 0 ) || form.status === 4 || form.status === 5)" :span="11">
+          <el-form-item v-if="form.type === 0" label="收款码" prop="receiptCode">
+            <upload :list="receiptCodeList" :limit="1" type="image" :disabled="!(form.status===2&&form.repairStatus===0&&checkPermission(['repairMan']))" style="width: 200px;" @change="handleUploadReceiptCode" />
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row type="flex" justify="center" :gutter="20">
-        <el-col v-if="form.status===2&&form.repairStatus===0&&checkPermission['repairMan']" :span="2">
+      <el-row type="flex" justify="center">
+        <el-col v-if="form.status===2&&form.repairStatus===0&&checkPermission(['repairMan'])" :span="2">
           <el-form-item>
             <el-button type="primary" @click="handleQuotation">
               提交报价
@@ -130,11 +130,29 @@
           </el-form-item>
         </el-col>
       </el-row>
-      <el-row type="flex" justify="center" :gutter="20">
-        <el-col v-if="form.status===2&&form.repairStatus===2&&checkPermission['repairMan']" :span="2">
+      <el-row type="flex" justify="center">
+        <el-col v-if="form.status===2&&form.repairStatus===2&&checkPermission(['repairMan'])" :span="2">
           <el-form-item>
             <el-button type="primary" @click="handleRepaired">
               完成修理
+            </el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row type="flex" justify="center">
+        <el-col v-if="form.status===2&&form.repairStatus===1&&checkPermission(['finance'])" :span="2">
+          <el-form-item>
+            <el-button type="primary" @click="handleFinanceCheck">
+              通过报价
+            </el-button>
+          </el-form-item>
+        </el-col>
+      </el-row>
+      <el-row type="flex" justify="center">
+        <el-col v-if="form.status===4&&form.repairStatus===3&&checkPermission(['finance'])" :span="2">
+          <el-form-item>
+            <el-button type="primary" @click="handlePaid">
+              已支付
             </el-button>
           </el-form-item>
         </el-col>
@@ -169,7 +187,7 @@
         <el-col :span="2">
           <el-form-item v-if="detailType === 'watch'&&form.applicantId===currentUserId&&(form.status==5)">
             <el-button type="primary" @click="handleDamage">
-              报废
+              未完成
             </el-button>
           </el-form-item>
         </el-col>
@@ -190,7 +208,7 @@ import { getCommunityList } from '@/api/community'
 import { getModelList } from '@/api/model'
 import { getFitnessEquipmentList } from '@/api/fitness-equipment'
 import Upload from '@/views/qiniu/upload.vue'
-import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage, quotation, financeCheck, repaired } from '@/api/work-order'
+import { addWorkOrder, getWorkOrderDetail, checkWorkOrder, finishWorkOrder, finishWorkOrderAndDamage, quotation, financeCheck, repaired, paid } from '@/api/work-order'
 import permission from '@/directive/permission/index.js'
 import { getRepairman } from '@/api/user'
 import checkPermission from '@/utils/permission'
@@ -251,7 +269,13 @@ export default {
         community: [{ required: true, message: '请刷新或联系管理员绑定社区', trigger: 'blur' }],
         model: [{ required: true, message: '请选择器材', trigger: 'blur' }],
         modelName: [{ required: true, message: '请选择器材', trigger: 'blur' }],
-        content: [{ required: true, message: '请填写内容', trigger: 'blur' }]
+        content: [{ required: true, message: '请填写内容', trigger: 'blur' }],
+        picture: [{ required: true, validator: (rule, value, callback) => {
+          if (this.form.pictureList.length === 0) {
+            return callback(new Error('请上传图片'))
+          }
+          return callback()
+        } }]
       },
       checkRules: {
         repairman: [{ required: false, validator: (rule, value, callback) => {
@@ -264,10 +288,12 @@ export default {
       },
       quotationRules: {
         money: [{
+          required: true,
           pattern: /^1000000000$|^1000000000.0$|^1000000000.00$|^[+]{0,1}(\d{0,9})$|^[+]{0,1}(\d{0,9}\.\d{1,2})$/,
           message: ' 请输入 0-10亿 的正数，可保留两位小数',
           trigger: 'blur'
-        }]
+        }],
+        receiptCode: [{ required: true, message: '请上传收款码', trigger: 'blur' }]
       },
       communityOptions: [],
       loadingCommunity: false,
@@ -294,6 +320,7 @@ export default {
     }
   },
   mounted() {
+    console.log(checkPermission(['repairMan']))
     if (this.$route.query.workOrderId != null) {
       this.edit(this.$route.query.workOrderId)
     } else {
@@ -301,6 +328,17 @@ export default {
     }
   },
   methods: {
+    handlePaid() {
+      paid(this.form.id).then(() => {
+        this.$notify({
+          title: '成功',
+          message: '操作成功',
+          type: 'success',
+          duration: 2000
+        })
+        this.edit(this.form.id)
+      })
+    },
     handleRepaired() {
       repaired(this.form.id).then(() => {
         this.$notify({
@@ -341,9 +379,7 @@ export default {
         )
       }
       this.money = this.form.money
-      console.log(this.money)
       this.formatePrice()
-      console.log(this.money)
       this.showFormatPrice = true
     },
     formatePrice() {
@@ -365,14 +401,19 @@ export default {
       }
     },
     handleQuotation() {
-      quotation(this.form).then(() => {
-        this.$notify({
-          title: '成功',
-          message: '操作成功',
-          type: 'success',
-          duration: 2000
-        })
-        this.edit(this.form.id)
+      const { id, receiptCode, money } = this.form
+      this.$refs['form'].validate((valid) => {
+        if (valid) {
+          quotation({ id, receiptCode, money }).then(() => {
+            this.$notify({
+              title: '成功',
+              message: '操作成功',
+              type: 'success',
+              duration: 2000
+            })
+            this.edit(this.form.id)
+          })
+        }
       })
     },
     handleChangeType(value) {
@@ -470,6 +511,8 @@ export default {
         }
         if (this.form.status === 0 && this.form.type === 0) {
           this.rules = this.checkRules
+        } else if (this.form.status === 2 && this.form.repairStatus === 0 && checkPermission(['repairMan'])) {
+          this.rules = this.quotationRules
         } else {
           this.rules = {}
         }
@@ -481,8 +524,13 @@ export default {
             this.form.pictureList.push({ url: u, response: { data: u }})
           }
         }
+        this.receiptCodeList = []
         if (this.form.receiptCode != null) {
           this.receiptCodeList.push({ url: this.form.receiptCode, response: { data: this.form.receiptCode }})
+        }
+        if (this.form.money != null) {
+          this.money = this.form.money + ''
+          this.formatePrice()
         }
       })
     },
@@ -513,7 +561,6 @@ export default {
     },
     handleUpload(data) {
       this.form.pictureList = data
-      console.log(data)
     },
     handleUploadReceiptCode(data) {
       this.receiptCodeList = data
