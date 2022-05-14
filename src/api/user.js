@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function login(data) {
   return request({
-    url: '/sys/login',
+    url: '/ycb/sys/login',
     method: 'post',
     data
   })
@@ -10,14 +10,14 @@ export function login(data) {
 
 export function getCheckCodePicture(key) {
   return request({
-    url: '/sys/randomImage/' + key,
+    url: '/ycb/sys/randomImage/' + key,
     method: 'get'
   })
 }
 
 export function getInfo(token) {
   return request({
-    url: '/sys/info',
+    url: '/ycb/sys/info',
     method: 'get',
     params: { token }
   })
@@ -25,14 +25,14 @@ export function getInfo(token) {
 
 export function logout() {
   return request({
-    url: '/sys/logout',
+    url: '/ycb/sys/logout',
     method: 'post'
   })
 }
 
 export function getRepairman(username) {
   return request({
-    url: '/user/getRepairman',
+    url: '/ycb/user/getRepairman',
     method: 'get',
     params: { userName: username }
   })
@@ -40,7 +40,7 @@ export function getRepairman(username) {
 
 export function getUserList(data) {
   return request({
-    url: '/user/getUserList',
+    url: '/ycb/user/getUserList',
     method: 'post',
     data
   })
@@ -48,7 +48,7 @@ export function getUserList(data) {
 
 export function addUser(data) {
   return request({
-    url: '/user/addUser',
+    url: '/ycb/user/addUser',
     method: 'post',
     data
   })
@@ -56,7 +56,7 @@ export function addUser(data) {
 
 export function updateUser(data) {
   return request({
-    url: '/user/updateUser',
+    url: '/ycb/user/updateUser',
     method: 'post',
     data
   })
@@ -64,7 +64,7 @@ export function updateUser(data) {
 
 export function checkAccount(account) {
   return request({
-    url: '/user/checkAccount',
+    url: '/ycb/user/checkAccount',
     method: 'get',
     params: { account: account }
   })
@@ -72,7 +72,7 @@ export function checkAccount(account) {
 
 export function getProperty(username) {
   return request({
-    url: '/user/getProperty',
+    url: '/ycb/user/getProperty',
     method: 'get',
     params: { userName: username }
   })

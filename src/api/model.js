@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getModelList(data) {
   return request({
-    url: '/model/list',
+    url: '/ycb/model/list',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function getModelList(data) {
 
 export function updateModel(data) {
   return request({
-    url: '/model/update',
+    url: '/ycb/model/update',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function updateModel(data) {
 
 export function addModel(data) {
   return request({
-    url: '/model/add',
+    url: '/ycb/model/add',
     method: 'post',
     data
   })
@@ -26,14 +26,14 @@ export function addModel(data) {
 
 export function deleteModel(data) {
   return request({
-    url: '/model/delete/' + data,
+    url: '/ycb/model/delete/' + data,
     method: 'get'
   })
 }
 
 export function getRecommendModel(data) {
   return request({
-    url: '/model/getRecommendModel/' + data.id,
+    url: '/ycb/model/getRecommendModel/' + data.id,
     method: 'get',
     params: { pageNum: data.pageNum, pageSize: data.pageSize }
   })

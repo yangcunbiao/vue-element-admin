@@ -2,7 +2,7 @@ import request from '@/utils/request'
 
 export function getCommunityList(data) {
   return request({
-    url: '/community/list',
+    url: '/ycb/community/list',
     method: 'post',
     data
   })
@@ -10,7 +10,7 @@ export function getCommunityList(data) {
 
 export function addCommunity(data) {
   return request({
-    url: '/community/add',
+    url: '/ycb/community/add',
     method: 'post',
     data
   })
@@ -18,7 +18,7 @@ export function addCommunity(data) {
 
 export function updateCommunity(data) {
   return request({
-    url: '/community/update',
+    url: '/ycb/community/update',
     method: 'post',
     data
   })
@@ -26,7 +26,7 @@ export function updateCommunity(data) {
 
 export function deleteCommunity(data) {
   return request({
-    url: '/community/delete/' + data,
+    url: '/ycb/community/delete/' + data,
     method: 'get'
   })
 }
