@@ -80,7 +80,7 @@ export default {
   },
   data() {
     return {
-      uploadAction: '/upload/uploadFile',
+      uploadAction: '/ycb/upload/uploadFile',
       image_uri: [],
       headers: {},
       dialogVisible: false,
